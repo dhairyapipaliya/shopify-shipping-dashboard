@@ -1,0 +1,21 @@
+<!doctype html>
+<html><head><meta charset="utf-8" /><title>Shopify Sync Status</title><link rel="stylesheet" href="/public/css/main.css" /></head>
+<body>
+  <%- include('/partials/nav') %>
+  <main class="container">
+    <h1>Shopify Sync Status</h1>
+    <section class="card">
+      <h3>Orders Sync</h3>
+      <% orders.forEach((o) => { %>
+        <p><strong><%= o.orderNumber %></strong> — <%= o.shopifySyncStatus %> <%= o.shopifySyncError ? '(' + o.shopifySyncError + ')' : '' %></p>
+      <% }) %>
+    </section>
+
+    <section class="card">
+      <h3>Fulfillment & Tracking Push Status</h3>
+      <% shipments.forEach((s) => { %>
+        <p><strong><%= s.order.orderNumber %></strong> — <%= s.shopifySyncStatus %> · Fulfillment: <%= s.shopifyFulfillmentId || 'Pending' %></p>
+      <% }) %>
+    </section>
+  </main>
+</body></html>

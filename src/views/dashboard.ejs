@@ -1,0 +1,32 @@
+<!doctype html>
+<html><head><meta charset="utf-8" /><title>Dashboard</title><link rel="stylesheet" href="/public/css/main.css" /></head>
+<body>
+  <%- include('/partials/nav') %>
+  <main class="container">
+    <h1>Shipping Dispatch Command Center</h1>
+    <p>Shopify is the source of truth for orders, product dimensions, and weight. This panel controls dispatch, booking, and fulfillment sync.</p>
+
+    <section class="grid">
+      <article class="card"><h3>Total Orders</h3><p><%= ordersCount %></p></article>
+      <article class="card"><h3>Total Shipments</h3><p><%= shipmentsCount %></p></article>
+    </section>
+
+    <section class="card">
+      <h3>Shopify Fulfillment Sync Snapshot</h3>
+      <% syncSummary.forEach((s) => { %>
+        <p><strong><%= s.shopifySyncStatus %></strong>: <%= s._count %></p>
+      <% }) %>
+    </section>
+
+    <h2>Latest Orders</h2>
+    <div class="card-grid">
+      <% latestOrders.forEach((order) => { %>
+      <article class="card">
+        <h4><%= order.orderNumber %> - <%= order.customerName %></h4>
+        <p>Weight: <%= order.totalWeightGrams %>g | <%= order.lengthCm %>×<%= order.widthCm %>×<%= order.heightCm %> cm</p>
+        <a class="btn-link" href="/orders/<%= order.id %>/dispatch">Dispatch Review</a>
+      </article>
+      <% }) %>
+    </div>
+  </main>
+</body></html>

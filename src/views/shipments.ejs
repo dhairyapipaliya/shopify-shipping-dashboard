@@ -1,0 +1,21 @@
+<!doctype html>
+<html><head><meta charset="utf-8" /><title>Shipment History</title><link rel="stylesheet" href="/public/css/main.css" /></head>
+<body>
+  <%- include('/partials/nav') %>
+  <main class="container">
+    <h1>Shipment History</h1>
+    <div class="card-grid">
+      <% shipments.forEach((s) => { %>
+      <article class="card">
+        <h3><%= s.order.orderNumber %> · <%= s.provider %></h3>
+        <p>Service: <%= s.serviceName %></p>
+        <p>AWB: <strong><%= s.awbNumber %></strong> (<%= s.awbSource %>)</p>
+        <p>Tracking #: <%= s.trackingNumber %></p>
+        <p>Shopify Fulfillment ID: <%= s.shopifyFulfillmentId || 'Pending' %></p>
+        <p>Sync: <%= s.shopifySyncStatus %> <%= s.shopifySyncError ? '(' + s.shopifySyncError + ')' : '' %></p>
+        <p><a href="<%= s.labelUrl %>" target="_blank">Label</a> · <a href="<%= s.trackingUrl %>" target="_blank">Tracking</a></p>
+      </article>
+      <% }) %>
+    </div>
+  </main>
+</body></html>

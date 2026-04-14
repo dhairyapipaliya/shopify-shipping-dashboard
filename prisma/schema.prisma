@@ -1,0 +1,100 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ShopifySyncStatus {
+  PENDING
+  SYNCED
+  FAILED
+}
+
+enum ShipmentStatus {
+  DRAFT
+  BOOKED
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Order {
+  id                 String            @id @default(cuid())
+  shopifyOrderId     String            @unique
+  orderNumber        String
+  customerName       String
+  phone              String?
+  addressLine1       String
+  addressLine2       String?
+  city               String
+  state              String
+  pincode            String
+  country            String            @default("IN")
+  totalWeightGrams   Int
+  lengthCm           Float
+  widthCm            Float
+  heightCm           Float
+  orderValue         Float
+  createdAt          DateTime
+  syncedAt           DateTime          @default(now())
+  shopifySyncStatus  ShopifySyncStatus @default(PENDING)
+  shopifySyncError   String?
+
+  quotes             ShipmentQuote[]
+  shipments          Shipment[]
+
+  @@index([pincode])
+}
+
+model ShipmentQuote {
+  id              String   @id @default(cuid())
+  orderId         String
+  provider        String
+  serviceName     String
+  etaDays         Int?
+  shippingCost    Float
+  totalCost       Float
+  labelReady      Boolean
+  trackingReady   Boolean
+  recommendation  Boolean  @default(false)
+  rawResponse     Json
+  createdAt       DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, provider])
+}
+
+model Shipment {
+  id                   String            @id @default(cuid())
+  orderId              String
+  provider             String
+  serviceName          String
+  awbNumber            String
+  awbSource            String
+  trackingNumber       String
+  trackingUrl          String?
+  labelUrl             String?
+  status               ShipmentStatus    @default(BOOKED)
+  shopifyFulfillmentId String?
+  shopifySyncStatus    ShopifySyncStatus @default(PENDING)
+  shopifySyncError     String?
+  providerPayload      Json
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+}

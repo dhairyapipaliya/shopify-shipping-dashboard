@@ -1,0 +1,52 @@
+<!doctype html>
+<html><head><meta charset="utf-8" /><title>Dispatch Review</title><link rel="stylesheet" href="/public/css/main.css" /></head>
+<body>
+  <%- include('/partials/nav') %>
+  <main class="container">
+    <h1>Dispatch Review · <%= order.orderNumber %></h1>
+    <section class="card">
+      <h3>Shopify Product Metrics</h3>
+      <p>Weight: <strong><%= order.totalWeightGrams %> g</strong></p>
+      <p>Dimensions: <strong><%= order.lengthCm %> × <%= order.widthCm %> × <%= order.heightCm %> cm</strong></p>
+      <p>Destination: <strong><%= order.pincode %></strong></p>
+      <p>Savings advisory: <strong>₹<%= savingsAmount %></strong></p>
+    </section>
+
+    <section class="card-grid">
+      <% ranked.forEach((q) => { %>
+        <article class="card provider-card">
+          <h3><%= q.serviceName %></h3>
+          <p>Provider: <strong><%= q.provider %></strong></p>
+          <p>Shipping Price: ₹<%= q.shippingCost %></p>
+          <p>Total Price: ₹<%= q.totalCost %></p>
+          <p>ETA: <%= q.etaDays ?? 'N/A' %></p>
+          <p>Label Ready: <%= q.labelReady ? 'Yes' : 'No' %></p>
+          <p>Tracking Ready: <%= q.trackingReady ? 'Yes' : 'No' %></p>
+          <p class="badge <%= q.tags.includes('recommended') ? 'recommended' : 'neutral' %>">
+            <%= q.tags.includes('recommended') ? 'Advisory: Recommended (Lowest Cost)' : 'Advisory: Alternative Option' %>
+          </p>
+
+          <form method="post" action="/orders/<%= order.id %>/book">
+            <input type="hidden" name="provider" value="<%= q.provider %>" />
+            <input type="hidden" name="serviceName" value="<%= q.serviceName %>" />
+
+            <label>Final Dispatch Weight (g)
+              <input type="number" name="weightGrams" value="<%= order.totalWeightGrams %>" required />
+            </label>
+            <label>Length (cm)
+              <input type="number" name="lengthCm" value="<%= order.lengthCm %>" required />
+            </label>
+            <label>Width (cm)
+              <input type="number" name="widthCm" value="<%= order.widthCm %>" required />
+            </label>
+            <label>Height (cm)
+              <input type="number" name="heightCm" value="<%= order.heightCm %>" required />
+            </label>
+
+            <button type="submit">Manual Select & Book</button>
+          </form>
+        </article>
+      <% }) %>
+    </section>
+  </main>
+</body></html>

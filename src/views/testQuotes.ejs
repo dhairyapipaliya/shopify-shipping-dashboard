@@ -1,0 +1,35 @@
+<!doctype html>
+<html><head><meta charset="utf-8" /><title>Quote Tester</title><link rel="stylesheet" href="/public/css/main.css" /></head>
+<body>
+  <%- include('/partials/nav') %>
+  <main class="container">
+    <h1>Dispatch Quote Tester</h1>
+
+    <form method="post" action="/admin/test-quotes" class="card">
+      <label>Destination Pincode <input name="destinationPincode" required value="<%= form.destinationPincode %>" /></label>
+      <label>Weight (grams) <input name="weightGrams" type="number" min="1" required value="<%= form.weightGrams %>" /></label>
+      <label>Length (cm) <input name="lengthCm" type="number" min="1" required value="<%= form.lengthCm %>" /></label>
+      <label>Width (cm) <input name="widthCm" type="number" min="1" required value="<%= form.widthCm %>" /></label>
+      <label>Height (cm) <input name="heightCm" type="number" min="1" required value="<%= form.heightCm %>" /></label>
+      <label>Order Value (₹) <input name="orderValue" type="number" min="0" required value="<%= form.orderValue %>" /></label>
+      <button type="submit">Compare Providers</button>
+    </form>
+
+    <% if (result) { %>
+      <div class="card-grid">
+        <% result.ranked.forEach((q) => { %>
+        <article class="card provider-card">
+          <h3><%= q.serviceName %></h3>
+          <p>Shipping Price: ₹<%= q.shippingCost %></p>
+          <p>Total Price: ₹<%= q.totalCost %></p>
+          <p>ETA: <%= q.etaDays ?? 'N/A' %></p>
+          <p>Label Ready: <%= q.labelReady ? 'Yes' : 'No' %></p>
+          <p>Tracking Ready: <%= q.trackingReady ? 'Yes' : 'No' %></p>
+          <p class="badge <%= q.tags.includes('recommended') ? 'recommended' : 'neutral' %>"><%= q.recommendationText %></p>
+        </article>
+        <% }) %>
+      </div>
+      <p class="card">Potential savings between options: ₹<%= result.savingsAmount %></p>
+    <% } %>
+  </main>
+</body></html>
