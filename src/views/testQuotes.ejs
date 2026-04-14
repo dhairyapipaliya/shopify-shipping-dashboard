@@ -1,0 +1,48 @@
+<!doctype html>
+<html><head><meta charset="utf-8" /><title>Test Quotes</title><link rel="stylesheet" href="/public/css/main.css" /></head>
+<body>
+  <% include _nav %>
+  <main class="container">
+    <h1>Sandbox Quote Test</h1>
+    <p>Compare Delhivery Direct vs Shipmozo Delhivery by cost only.</p>
+
+    <form method="post" action="/admin/test-quotes" class="card">
+      <label>Destination Pincode <input name="destinationPincode" required value="<%= form.destinationPincode %>" /></label>
+      <label>Weight (grams) <input name="weightGrams" type="number" min="1" required value="<%= form.weightGrams %>" /></label>
+      <label>Length (cm) <input name="lengthCm" type="number" min="1" required value="<%= form.lengthCm %>" /></label>
+      <label>Width (cm) <input name="widthCm" type="number" min="1" required value="<%= form.widthCm %>" /></label>
+      <label>Height (cm) <input name="heightCm" type="number" min="1" required value="<%= form.heightCm %>" /></label>
+      <label>Payment Mode
+        <select name="paymentMode">
+          <option value="PREPAID" <%= form.paymentMode === 'PREPAID' ? 'selected' : '' %>>Prepaid</option>
+          <option value="COD" <%= form.paymentMode === 'COD' ? 'selected' : '' %>>COD</option>
+        </select>
+      </label>
+      <label>Order Value (₹) <input name="orderValue" type="number" min="0" required value="<%= form.orderValue %>" /></label>
+      <button type="submit">Test Comparison</button>
+    </form>
+
+    <% if (result) { %>
+      <section class="card">
+        <h3>Cheapest Option</h3>
+        <p><strong><%= result.cheapest ? result.cheapest.serviceName : 'N/A' %></strong></p>
+        <p>Savings: ₹<%= result.savingsAmount %></p>
+      </section>
+
+      <table>
+        <thead><tr><th>Provider</th><th>Service</th><th>Shipping</th><th>COD</th><th>Total</th></tr></thead>
+        <tbody>
+          <% result.ranked.forEach((q) => { %>
+            <tr>
+              <td><%= q.provider %></td>
+              <td><%= q.serviceName %></td>
+              <td>₹<%= q.shippingCost %></td>
+              <td>₹<%= q.codCharges %></td>
+              <td>₹<%= q.totalCost %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+  </main>
+</body></html>
