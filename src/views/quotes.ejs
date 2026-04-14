@@ -1,0 +1,40 @@
+<!doctype html>
+<html><head><meta charset="utf-8" /><title>Quotes</title><link rel="stylesheet" href="/public/css/main.css" /></head>
+<body>
+  <% include _nav %>
+  <main class="container">
+    <h1>Delhivery Cost Comparison for <%= order.orderNumber %></h1>
+    <p>Comparing only Delhivery Direct vs Delhivery via Shipmozo. Recommendation is always based on the cheapest total shipping cost.</p>
+
+    <% if (cheapest) { %>
+      <section class="card">
+        <h3>Recommendation: <%= cheapest.serviceName %> (<%= cheapest.provider %>)</h3>
+        <p>Cheapest Total Cost: ₹<%= cheapest.totalCost %></p>
+        <p>Savings vs expensive option: ₹<%= savingsAmount %></p>
+      </section>
+    <% } %>
+
+    <table>
+      <thead><tr><th>Provider</th><th>Service</th><th>Shipping</th><th>COD</th><th>Total</th><th>Status</th><th>Manual Override</th></tr></thead>
+      <tbody>
+        <% ranked.forEach((q) => { %>
+        <tr>
+          <td><%= q.provider %></td>
+          <td><%= q.serviceName %></td>
+          <td>₹<%= q.shippingCost %></td>
+          <td>₹<%= q.codCharges %></td>
+          <td>₹<%= q.totalCost %></td>
+          <td><%= q.tags.includes("cheapest") ? "Cheapest" : "Higher Cost" %></td>
+          <td>
+            <form method="post" action="/orders/<%= order.id %>/book">
+              <input type="hidden" name="provider" value="<%= q.provider %>" />
+              <input type="hidden" name="serviceName" value="<%= q.serviceName %>" />
+              <button type="submit">Select & Book</button>
+            </form>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </main>
+</body></html>

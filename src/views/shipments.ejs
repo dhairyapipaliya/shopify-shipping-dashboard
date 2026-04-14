@@ -1,0 +1,24 @@
+<!doctype html>
+<html><head><meta charset="utf-8" /><title>Shipments</title><link rel="stylesheet" href="/public/css/main.css" /></head>
+<body>
+  <% include _nav %>
+  <main class="container">
+    <h1>Shipments</h1>
+    <table>
+      <thead><tr><th>Order</th><th>Provider</th><th>Service</th><th>AWB</th><th>Label</th><th>Tracking</th><th>Status</th></tr></thead>
+      <tbody>
+        <% shipments.forEach((s) => { %>
+          <tr>
+            <td><%= s.order.orderNumber %></td>
+            <td><%= s.provider %></td>
+            <td><%= s.serviceName %></td>
+            <td><%= s.awbNumber %></td>
+            <td><a href="<%= s.labelUrl %>" target="_blank">Download Label</a></td>
+            <td><a href="<%= s.trackingUrl %>" target="_blank">Track</a></td>
+            <td><%= s.status %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </main>
+</body></html>
