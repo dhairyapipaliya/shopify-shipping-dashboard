@@ -1,7 +1,28 @@
-<nav class="nav">
-  <a href="/">Dashboard</a>
-  <a href="/orders">Orders</a>
-  <a href="/shipments">Shipments</a>
-  <a href="/admin/test-quotes">Test Quotes</a>
-  <form method="post" action="/logout"><button>Logout</button></form>
-</nav>
+<aside class="sidebar" id="app-sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-mark">S</div>
+    <div>
+      <p class="brand-eyebrow">Operations</p>
+      <h2>Shipping Admin</h2>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav" aria-label="Primary">
+    <a class="nav-link <%= activePage === 'dashboard' ? 'active' : '' %>" href="/">
+      <span>Dashboard</span>
+    </a>
+    <a class="nav-link <%= activePage === 'orders' ? 'active' : '' %>" href="/orders">
+      <span>Orders</span>
+    </a>
+    <a class="nav-link <%= activePage === 'shipments' ? 'active' : '' %>" href="/shipments">
+      <span>Shipments</span>
+    </a>
+    <a class="nav-link <%= activePage === 'testQuotes' ? 'active' : '' %>" href="/admin/test-quotes">
+      <span>Test Quotes</span>
+    </a>
+  </nav>
+
+  <form method="post" action="/logout" class="logout-form">
+    <button class="btn btn-ghost btn-block" type="submit">Logout</button>
+  </form>
+</aside>

@@ -1,19 +1,64 @@
 <!doctype html>
-<html><head><meta charset="utf-8" /><title>Dashboard</title><link rel="stylesheet" href="/public/css/main.css" /></head>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="/public/css/main.css" />
+</head>
 <body>
-<%- include('partials/_nav') %>
-  <main class="container">
-    <h1>Shipping Admin Dashboard</h1>
-    <p>Current recommendation mode: <strong>Cheapest Delhivery option only</strong> (Direct vs Shipmozo Delhivery).</p>
-    <section class="grid">
-      <article class="card"><h3>Total Orders</h3><p><%= ordersCount %></p></article>
-      <article class="card"><h3>Total Shipments</h3><p><%= shipmentsCount %></p></article>
-    </section>
-    <h2>Latest Orders</h2>
-    <table><thead><tr><th>Order</th><th>Customer</th><th>Pincode</th><th>Payment</th></tr></thead><tbody>
-      <% latestOrders.forEach((order) => { %>
-        <tr><td><%= order.orderNumber %></td><td><%= order.customerName %></td><td><%= order.pincode %></td><td><%= order.paymentMode %></td></tr>
-      <% }) %>
-    </tbody></table>
-  </main>
-</body></html>
+  <div class="app-shell">
+    <%- include('partials/_nav', { activePage: 'dashboard' }) %>
+
+    <div class="app-content">
+      <header class="topbar">
+        <button class="sidebar-toggle" type="button" aria-label="Toggle sidebar" onclick="document.body.classList.toggle('sidebar-open')">☰</button>
+        <div>
+          <p class="page-eyebrow">Overview</p>
+          <h1>Shipping Operations Dashboard</h1>
+        </div>
+      </header>
+
+      <main class="container">
+        <section class="card">
+          <p class="muted">Current recommendation mode</p>
+          <p><strong>Cheapest Delhivery option only</strong> (Direct vs Shipmozo Delhivery).</p>
+        </section>
+
+        <section class="grid cols-2">
+          <article class="card stat-card">
+            <p class="stat-label">Total Orders</p>
+            <p class="stat-value"><%= ordersCount %></p>
+          </article>
+          <article class="card stat-card">
+            <p class="stat-label">Total Shipments</p>
+            <p class="stat-value"><%= shipmentsCount %></p>
+          </article>
+        </section>
+
+        <section class="card">
+          <div class="section-header">
+            <h2>Latest Orders</h2>
+            <span class="badge">Recent</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Order</th><th>Customer</th><th>Pincode</th><th>Payment</th></tr></thead>
+              <tbody>
+                <% latestOrders.forEach((order) => { %>
+                  <tr>
+                    <td><%= order.orderNumber %></td>
+                    <td><%= order.customerName %></td>
+                    <td><%= order.pincode %></td>
+                    <td><span class="badge <%= order.paymentMode === 'COD' ? 'badge-amber' : 'badge-blue' %>"><%= order.paymentMode %></span></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>
