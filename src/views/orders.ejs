@@ -24,12 +24,31 @@
 
       <main class="container">
         <section class="card">
+          <div class="orders-toolbar">
+            <form method="get" action="/orders" class="orders-filter-form">
+              <label for="status" class="small">Filter by Status</label>
+              <div class="orders-filter-controls">
+                <select id="status" name="status" onchange="this.form.submit()">
+                  <% statusOptions.forEach((option) => { %>
+                    <option value="<%= option.value %>" <%= selectedStatus === option.value ? 'selected' : '' %>><%= option.label %></option>
+                  <% }) %>
+                </select>
+                <noscript><button class="btn btn-sm" type="submit">Apply</button></noscript>
+              </div>
+            </form>
+          </div>
+
+          <% if (!orders.length) { %>
+            <div class="empty-state">
+              <p><strong>No orders found for selected status.</strong></p>
+              <p class="muted small">Try choosing a different status filter or sync fresh orders.</p>
+            </div>
+          <% } else { %>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Order</th><th>Customer</th><th>Weight(g)</th><th>Pincode</th><th>Payment</th><th>Action</th></tr></thead>
+              <thead><tr><th>Order</th><th>Customer</th><th>Weight(g)</th><th>Pincode</th><th>Payment</th><th>Status</th><th>Action</th></tr></thead>
               <tbody>
               <% orders.forEach((order) => { %>
-              <% const latestShipment = order.shipments[0]; %>
               <tr>
                 <td><%= order.orderNumber %></td>
                 <td><%= order.customerName %></td>
@@ -37,10 +56,13 @@
                 <td><%= order.pincode %></td>
                 <td><span class="badge <%= order.paymentMode === 'COD' ? 'badge-amber' : 'badge-blue' %>"><%= order.paymentMode %></span></td>
                 <td>
-                  <% if (latestShipment) { %>
+                  <span class="badge <%= order.operationalStatusBadgeClass %>"><%= order.operationalStatusLabel %></span>
+                </td>
+                <td>
+                  <% if (order.latestShipment) { %>
                     <div class="row-stack">
                       <span class="badge badge-green">Booked</span>
-                      <span class="muted small">Shipment <%= latestShipment.status %></span>
+                      <span class="muted small">Shipment <%= order.latestShipment.status %></span>
                     </div>
                   <% } else { %>
                     <a class="link" href="/orders/<%= order.id %>/quotes">Compare Cheapest Delhivery Option</a>
@@ -51,6 +73,7 @@
               </tbody>
             </table>
           </div>
+          <% } %>
         </section>
       </main>
     </div>

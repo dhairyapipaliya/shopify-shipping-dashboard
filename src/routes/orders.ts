@@ -4,6 +4,14 @@ import { requireAuth } from "../middleware/auth.js";
 import { rankQuotes } from "../services/quoteEngine.js";
 import { providerRegistry } from "../services/providers/providerRegistry.js";
 import { fetchShopifyOrders } from "../services/shopify/shopifyClient.js";
+import {
+  deriveOrderOperationalStatus,
+  getOrderStatusBadgeClass,
+  getOrderStatusLabel,
+  matchesOrderStatusFilter,
+  orderStatusFilters,
+  parseOrderStatusFilter
+} from "../utils/orderStatuses.js";
 
 export const ordersRouter = Router();
 
@@ -21,7 +29,9 @@ ordersRouter.post("/orders/sync", requireAuth, async (_req, res) => {
   res.redirect("/orders");
 });
 
-ordersRouter.get("/orders", requireAuth, async (_req, res) => {
+ordersRouter.get("/orders", requireAuth, async (req, res) => {
+  const selectedStatus = parseOrderStatusFilter(req.query.status);
+
   const orders = await prisma.order.findMany({
     orderBy: { createdAt: "desc" },
     include: {
@@ -31,7 +41,27 @@ ordersRouter.get("/orders", requireAuth, async (_req, res) => {
       }
     }
   });
-  res.render("orders", { orders });
+
+  const orderRows = orders.map((order) => {
+    const latestShipment = order.shipments[0];
+    const operationalStatus = deriveOrderOperationalStatus(latestShipment);
+
+    return {
+      ...order,
+      latestShipment,
+      operationalStatus,
+      operationalStatusLabel: getOrderStatusLabel(operationalStatus),
+      operationalStatusBadgeClass: getOrderStatusBadgeClass(operationalStatus)
+    };
+  });
+
+  const filteredOrders = orderRows.filter((order) => matchesOrderStatusFilter(order.operationalStatus, selectedStatus));
+
+  res.render("orders", {
+    orders: filteredOrders,
+    selectedStatus,
+    statusOptions: orderStatusFilters
+  });
 });
 
 ordersRouter.get("/orders/:id/quotes", requireAuth, async (req, res) => {
