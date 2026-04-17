@@ -15,10 +15,9 @@ describe("orderStatuses", () => {
     expect(deriveOrderOperationalStatus({ status: "RTO_DELIVERED" })).toBe("rtoDelivered");
   });
 
-  it("treats booked/scheduled filter as umbrella for booked and pickup scheduled", () => {
-    expect(matchesOrderStatusFilter("bookedScheduled", "bookedScheduled")).toBe(true);
-    expect(matchesOrderStatusFilter("pickupScheduled", "bookedScheduled")).toBe(true);
-    expect(matchesOrderStatusFilter("inTransit", "bookedScheduled")).toBe(false);
+  it("matches direct status filters", () => {
+    expect(matchesOrderStatusFilter("pickupScheduled", "pickupScheduled")).toBe(true);
+    expect(matchesOrderStatusFilter("inTransit", "pickupScheduled")).toBe(false);
   });
 
   it("parses invalid filter values safely", () => {

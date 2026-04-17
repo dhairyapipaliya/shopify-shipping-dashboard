@@ -1,7 +1,6 @@
 export const orderStatusFilters = [
   { value: "all", label: "All" },
   { value: "unbooked", label: "Unbooked" },
-  { value: "bookedScheduled", label: "Booked / Scheduled" },
   { value: "pickupScheduled", label: "Pickup Scheduled" },
   { value: "inTransit", label: "In Transit" },
   { value: "outForDelivery", label: "Out for Delivery" },
@@ -29,8 +28,8 @@ export const dashboardShipmentStatusKeys = [
 const statusLabelMap = Object.fromEntries(orderStatusFilters.map((status) => [status.value, status.label])) as Record<OrderStatusFilter, string>;
 
 const shipmentStatusMap: Record<string, OperationalOrderStatus> = {
-  DRAFT: "bookedScheduled",
-  BOOKED: "bookedScheduled",
+  DRAFT: "pickupScheduled",
+  BOOKED: "pickupScheduled",
   PICKUP_SCHEDULED: "pickupScheduled",
   IN_TRANSIT: "inTransit",
   OUT_FOR_DELIVERY: "outForDelivery",
@@ -48,8 +47,8 @@ export const parseOrderStatusFilter = (value: unknown): OrderStatusFilter => {
 };
 
 export const normalizeShipmentStatus = (rawStatus: string | null | undefined): OperationalOrderStatus => {
-  if (!rawStatus) return "bookedScheduled";
-  return shipmentStatusMap[rawStatus.toUpperCase()] ?? "bookedScheduled";
+  if (!rawStatus) return "pickupScheduled";
+  return shipmentStatusMap[rawStatus.toUpperCase()] ?? "pickupScheduled";
 };
 
 export const deriveOrderOperationalStatus = (latestShipment?: { status: string } | null): OperationalOrderStatus => {
@@ -59,9 +58,6 @@ export const deriveOrderOperationalStatus = (latestShipment?: { status: string }
 
 export const matchesOrderStatusFilter = (status: OperationalOrderStatus, selectedFilter: OrderStatusFilter): boolean => {
   if (selectedFilter === "all") return true;
-  if (selectedFilter === "bookedScheduled") {
-    return status === "bookedScheduled" || status === "pickupScheduled";
-  }
   return status === selectedFilter;
 };
 
@@ -76,7 +72,6 @@ export const getOrderStatusBadgeClass = (status: OperationalOrderStatus): string
     case "pickupScheduled":
       return "badge-blue";
     case "unbooked":
-    case "bookedScheduled":
       return "badge-slate";
     default:
       return "badge-amber";

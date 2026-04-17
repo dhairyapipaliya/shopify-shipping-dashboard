@@ -25,7 +25,7 @@ export type DashboardRecentOrder = {
   customerName: string;
   shipmentLabel: string;
   orderType: "Prepaid" | "COD";
-  status: "Pending" | "Booked" | "In Transit" | "Delivered";
+  status: "Pending" | "Pickup Scheduled" | "In Transit" | "Delivered";
   date: string;
 };
 
@@ -92,14 +92,14 @@ const providerSnapshots: ProviderShipmentSnapshot[] = [
 ];
 
 const recentOrders: DashboardRecentOrder[] = [
-  { orderId: "#100451", customerName: "Aarav Mehta", shipmentLabel: "Wireless Keyboard", orderType: "Prepaid", status: "Booked", date: "Apr 17, 2026" },
+  { orderId: "#100451", customerName: "Aarav Mehta", shipmentLabel: "Wireless Keyboard", orderType: "Prepaid", status: "Pickup Scheduled", date: "Apr 17, 2026" },
   { orderId: "#100450", customerName: "Riya Sharma", shipmentLabel: "Skincare Combo", orderType: "COD", status: "In Transit", date: "Apr 17, 2026" },
   { orderId: "#100449", customerName: "Kabir Khan", shipmentLabel: "Sports Bottle Pack", orderType: "Prepaid", status: "Pending", date: "Apr 17, 2026" },
   { orderId: "#100448", customerName: "Neha Verma", shipmentLabel: "Noise Cancelling Earbuds", orderType: "COD", status: "Delivered", date: "Apr 16, 2026" },
-  { orderId: "#100447", customerName: "Ishaan Das", shipmentLabel: "Cotton T-Shirt Set", orderType: "Prepaid", status: "Booked", date: "Apr 16, 2026" },
+  { orderId: "#100447", customerName: "Ishaan Das", shipmentLabel: "Cotton T-Shirt Set", orderType: "Prepaid", status: "Pickup Scheduled", date: "Apr 16, 2026" },
   { orderId: "#100446", customerName: "Diya Iyer", shipmentLabel: "Kitchen Organizer", orderType: "COD", status: "In Transit", date: "Apr 16, 2026" },
   { orderId: "#100445", customerName: "Arjun Patel", shipmentLabel: "Fitness Resistance Bands", orderType: "Prepaid", status: "Delivered", date: "Apr 15, 2026" },
-  { orderId: "#100444", customerName: "Myra Sen", shipmentLabel: "Phone Case Duo", orderType: "COD", status: "Booked", date: "Apr 15, 2026" },
+  { orderId: "#100444", customerName: "Myra Sen", shipmentLabel: "Phone Case Duo", orderType: "COD", status: "Pickup Scheduled", date: "Apr 15, 2026" },
   { orderId: "#100443", customerName: "Yash Gupta", shipmentLabel: "Travel Pouch", orderType: "Prepaid", status: "Pending", date: "Apr 15, 2026" },
   { orderId: "#100442", customerName: "Anaya Roy", shipmentLabel: "Coffee Mug Gift Box", orderType: "COD", status: "In Transit", date: "Apr 14, 2026" }
 ];
@@ -113,7 +113,7 @@ export const getDashboardViewModel = (): DashboardViewModel => {
     dateRangeLabel: "Last 30 days",
     kpis: [
       { key: "totalShipments", label: "Total Shipments", value: "2,146", change: "+12.4% vs last month", href: "/shipments" },
-      { key: "todayShipment", label: "Today Shipment", value: "87", change: "+8 since yesterday", href: "/orders?status=bookedScheduled" },
+      { key: "todayShipment", label: "Today Shipment", value: "87", change: "+8 since yesterday", href: "/orders?status=pickupScheduled" },
       { key: "avgShipmentCost", label: "Avg Shipment Cost", value: "₹86.40", change: "-₹3.20 optimization", href: "/quotes" },
       { key: "unshippedOrders", label: "Unshipped Orders", value: "39", change: "Needs attention", href: "/orders?status=unbooked" }
     ],

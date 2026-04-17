@@ -29,7 +29,7 @@
           <section class="card booked-card">
             <div class="section-header">
               <h3>Shipment already created for this order</h3>
-              <span class="badge badge-green">Booked</span>
+              <span class="badge badge-blue">Pickup Scheduled</span>
             </div>
             <p><strong><%= existingShipment.provider %></strong> · <%= existingShipment.serviceName %></p>
             <p class="muted">AWB: <%= existingShipment.awbNumber %> · Status: <%= existingShipment.status %></p>
@@ -74,7 +74,7 @@
                       <input type="hidden" name="provider" value="<%= q.provider %>" />
                       <input type="hidden" name="serviceName" value="<%= q.serviceName %>" />
                       <button class="btn btn-sm" type="submit" <%= existingShipment ? 'disabled' : '' %>>
-                        <%= existingShipment ? 'Already Booked' : 'Select & Book' %>
+                        <%= existingShipment ? 'Pickup Scheduled' : 'Select & Book' %>
                       </button>
                     </form>
                   </td>
