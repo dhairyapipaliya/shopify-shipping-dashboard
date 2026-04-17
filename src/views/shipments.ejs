@@ -1,24 +1,47 @@
 <!doctype html>
-<html><head><meta charset="utf-8" /><title>Shipments</title><link rel="stylesheet" href="/public/css/main.css" /></head>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shipments</title>
+  <link rel="stylesheet" href="/public/css/main.css" />
+</head>
 <body>
-<%- include('partials/_nav') %>
-  <main class="container">
-    <h1>Shipments</h1>
-    <table>
-      <thead><tr><th>Order</th><th>Provider</th><th>Service</th><th>AWB</th><th>Label</th><th>Tracking</th><th>Status</th></tr></thead>
-      <tbody>
-        <% shipments.forEach((s) => { %>
-          <tr>
-            <td><%= s.order.orderNumber %></td>
-            <td><%= s.provider %></td>
-            <td><%= s.serviceName %></td>
-            <td><%= s.awbNumber %></td>
-            <td><a href="<%= s.labelUrl %>" target="_blank">Download Label</a></td>
-            <td><a href="<%= s.trackingUrl %>" target="_blank">Track</a></td>
-            <td><%= s.status %></td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  </main>
-</body></html>
+  <div class="app-shell">
+    <%- include('partials/_nav', { activePage: 'shipments' }) %>
+
+    <div class="app-content">
+      <header class="topbar">
+        <button class="sidebar-toggle" type="button" aria-label="Toggle sidebar" onclick="document.body.classList.toggle('sidebar-open')">☰</button>
+        <div>
+          <p class="page-eyebrow">Logistics</p>
+          <h1>Shipments</h1>
+        </div>
+      </header>
+
+      <main class="container">
+        <section class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Order</th><th>Provider</th><th>Service</th><th>AWB</th><th>Label</th><th>Tracking</th><th>Status</th></tr></thead>
+              <tbody>
+                <% shipments.forEach((s) => { %>
+                  <tr>
+                    <td><%= s.order.orderNumber %></td>
+                    <td><%= s.provider %></td>
+                    <td><%= s.serviceName %></td>
+                    <td><%= s.awbNumber %></td>
+                    <td><a class="link" href="<%= s.labelUrl %>" target="_blank">Download Label</a></td>
+                    <td><a class="link" href="<%= s.trackingUrl %>" target="_blank">Track</a></td>
+                    <td><span class="badge badge-blue"><%= s.status %></span></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>
