@@ -340,6 +340,32 @@ input:focus, select:focus {
   background: #fcfdff;
 }
 
+.orders-toolbar {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 14px;
+}
+
+.orders-filter-form {
+  display: grid;
+  gap: 6px;
+  min-width: 260px;
+}
+
+.orders-filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.empty-state {
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  background: #f8fafc;
+  padding: 20px;
+  text-align: center;
+}
+
 .badge {
   display: inline-flex;
   padding: 3px 10px;

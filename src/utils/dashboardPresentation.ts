@@ -1,19 +1,8 @@
-export const shipmentStatuses = [
-  "pickupScheduled",
-  "inTransit",
-  "delivered",
-  "undelivered",
-  "outForDelivery",
-  "rtoInTransit",
-  "rtoDelivered",
-  "ndr"
-] as const;
-
-export type ShipmentStatusKey = (typeof shipmentStatuses)[number];
+import { dashboardShipmentStatusKeys, getOrderStatusLabel, type OperationalOrderStatus } from "./orderStatuses.js";
 
 export type ProviderShipmentSnapshot = {
   provider: string;
-  statuses: Partial<Record<ShipmentStatusKey, number>>;
+  statuses: Partial<Record<OperationalOrderStatus, number>>;
 };
 
 export type DashboardKpi = {
@@ -50,7 +39,7 @@ export type DashboardViewModel = {
   generatedAt: string;
   dateRangeLabel: string;
   kpis: DashboardKpi[];
-  shipmentStatuses: Array<{ key: ShipmentStatusKey; label: string; count: number; href: string }>;
+  shipmentStatuses: Array<{ key: OperationalOrderStatus; label: string; count: number; href: string }>;
   providerDistribution: Array<{ provider: string; shipments: number; share: number }>;
   quickActions: DashboardQuickAction[];
   activity: DashboardActivityItem[];
@@ -58,31 +47,14 @@ export type DashboardViewModel = {
   recentOrders: DashboardRecentOrder[];
 };
 
-const statusLabels: Record<ShipmentStatusKey, string> = {
-  pickupScheduled: "Pickup Scheduled",
-  inTransit: "In Transit",
-  delivered: "Delivered",
-  undelivered: "Undelivered",
-  outForDelivery: "Out for Delivery",
-  rtoInTransit: "RTO In Transit",
-  rtoDelivered: "RTO Delivered",
-  ndr: "NDR"
-};
-
 export const aggregateShipmentStatuses = (snapshots: ProviderShipmentSnapshot[]) => {
-  const totals: Record<ShipmentStatusKey, number> = {
-    pickupScheduled: 0,
-    inTransit: 0,
-    delivered: 0,
-    undelivered: 0,
-    outForDelivery: 0,
-    rtoInTransit: 0,
-    rtoDelivered: 0,
-    ndr: 0
-  };
+  const totals = Object.fromEntries(dashboardShipmentStatusKeys.map((status) => [status, 0])) as Record<
+    (typeof dashboardShipmentStatusKeys)[number],
+    number
+  >;
 
   for (const snapshot of snapshots) {
-    for (const status of shipmentStatuses) {
+    for (const status of dashboardShipmentStatusKeys) {
       totals[status] += snapshot.statuses[status] ?? 0;
     }
   }
@@ -141,18 +113,18 @@ export const getDashboardViewModel = (): DashboardViewModel => {
     dateRangeLabel: "Last 30 days",
     kpis: [
       { key: "totalShipments", label: "Total Shipments", value: "2,146", change: "+12.4% vs last month", href: "/shipments" },
-      { key: "todayShipment", label: "Today Shipment", value: "87", change: "+8 since yesterday", href: "/shipments" },
+      { key: "todayShipment", label: "Today Shipment", value: "87", change: "+8 since yesterday", href: "/orders?status=bookedScheduled" },
       { key: "avgShipmentCost", label: "Avg Shipment Cost", value: "₹86.40", change: "-₹3.20 optimization", href: "/quotes" },
-      { key: "unshippedOrders", label: "Unshipped Orders", value: "39", change: "Needs attention", href: "/orders" }
+      { key: "unshippedOrders", label: "Unshipped Orders", value: "39", change: "Needs attention", href: "/orders?status=unbooked" }
     ],
-    shipmentStatuses: shipmentStatuses.map((status) => ({
+    shipmentStatuses: dashboardShipmentStatusKeys.map((status) => ({
       key: status,
-      label: statusLabels[status],
+      label: getOrderStatusLabel(status),
       count: totals[status],
-      href: "/shipments"
+      href: `/orders?status=${status}`
     })),
     providerDistribution: providerSnapshots.map((snapshot) => {
-      const shipments = shipmentStatuses.reduce((sum, key) => sum + (snapshot.statuses[key] ?? 0), 0);
+      const shipments = dashboardShipmentStatusKeys.reduce((sum, key) => sum + (snapshot.statuses[key] ?? 0), 0);
       return {
         provider: snapshot.provider,
         shipments,
