@@ -2,6 +2,7 @@ import { Router } from "express";
 import { prisma } from "../db.js";
 import { requireAuth } from "../middleware/auth.js";
 import { providerRegistry } from "../services/providers/providerRegistry.js";
+import { selectShipmentsForDisplay } from "../utils/shipmentDisplay.js";
 
 export const shipmentRouter = Router();
 
@@ -49,6 +50,12 @@ shipmentRouter.post("/orders/:id/book", requireAuth, async (req, res) => {
 });
 
 shipmentRouter.get("/shipments", requireAuth, async (_req, res) => {
-  const shipments = await prisma.shipment.findMany({ include: { order: true }, orderBy: { createdAt: "desc" } });
-  res.render("shipments", { shipments });
+  const shipments = await prisma.shipment.findMany({
+    include: { order: true },
+    orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }]
+  });
+
+  const shipmentRows = selectShipmentsForDisplay(shipments);
+
+  res.render("shipments", { shipments: shipmentRows });
 });
