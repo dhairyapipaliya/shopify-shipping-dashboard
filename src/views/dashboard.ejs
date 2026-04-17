@@ -19,44 +19,154 @@
         </div>
       </header>
 
-      <main class="container">
-        <section class="card">
-          <p class="muted">Current recommendation mode</p>
-          <p><strong>Cheapest Delhivery option only</strong> (Direct vs Shipmozo Delhivery).</p>
+      <main class="container dashboard-layout">
+        <section class="card dashboard-hero">
+          <div>
+            <p class="page-eyebrow">Control center</p>
+            <h2>Operations snapshot for your shipping workflow</h2>
+            <p class="muted">Track bookings, monitor delivery states, and act quickly across providers from one unified dashboard.</p>
+          </div>
+          <div class="hero-actions">
+            <button class="btn btn-sm" type="button">Export Summary</button>
+            <button class="btn btn-sm btn-soft" type="button"><%= dashboard.dateRangeLabel %></button>
+            <span class="muted small"><%= dashboard.generatedAt %></span>
+          </div>
         </section>
 
-        <section class="grid cols-2">
-          <article class="card stat-card">
-            <p class="stat-label">Total Orders</p>
-            <p class="stat-value"><%= ordersCount %></p>
+        <section class="grid kpi-grid">
+          <% dashboard.kpis.forEach((kpi) => { %>
+            <a href="<%= kpi.href %>" class="card interactive-card stat-card" role="button" aria-label="View <%= kpi.label %>">
+              <p class="stat-label"><%= kpi.label %></p>
+              <p class="stat-value"><%= kpi.value %></p>
+              <p class="muted small"><%= kpi.change %></p>
+            </a>
+          <% }) %>
+        </section>
+
+        <section class="card">
+          <div class="section-header">
+            <h2>Delivery Partner Shipment Status</h2>
+            <a class="link" href="/shipments">View All</a>
+          </div>
+          <div class="grid status-grid">
+            <% dashboard.shipmentStatuses.forEach((status) => { %>
+              <a href="<%= status.href %>" class="interactive-card status-card" role="button" aria-label="View <%= status.label %> shipments">
+                <p class="muted small"><%= status.label %></p>
+                <p class="status-count"><%= status.count %></p>
+              </a>
+            <% }) %>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="section-header">
+            <h2>Quick Actions</h2>
+            <span class="badge badge-slate">Route-ready</span>
+          </div>
+          <div class="grid quick-actions-grid">
+            <% dashboard.quickActions.forEach((action) => { %>
+              <a href="<%= action.disabled ? '#' : action.href %>" class="interactive-card quick-action <%= action.disabled ? 'is-disabled' : '' %>" <%= action.disabled ? 'aria-disabled="true" tabindex="-1"' : '' %>>
+                <p><strong><%= action.label %></strong></p>
+                <p class="muted small"><%= action.helper %></p>
+              </a>
+            <% }) %>
+          </div>
+        </section>
+
+        <section class="grid analytics-grid">
+          <article class="card">
+            <div class="section-header">
+              <h2>Shipment Summary Trend</h2>
+              <span class="badge badge-blue">Mock analytics</span>
+            </div>
+            <div class="mini-chart" aria-hidden="true">
+              <span style="height: 42%"></span>
+              <span style="height: 58%"></span>
+              <span style="height: 67%"></span>
+              <span style="height: 51%"></span>
+              <span style="height: 73%"></span>
+              <span style="height: 82%"></span>
+              <span style="height: 76%"></span>
+            </div>
+            <p class="muted small">Weekly booking and delivery movement; ready to bind to live analytics feeds.</p>
           </article>
-          <article class="card stat-card">
-            <p class="stat-label">Total Shipments</p>
-            <p class="stat-value"><%= shipmentsCount %></p>
+
+          <article class="card">
+            <div class="section-header">
+              <h2>Provider Distribution</h2>
+              <a class="link" href="/quotes">Optimize Routes</a>
+            </div>
+            <div class="stack-list">
+              <% dashboard.providerDistribution.forEach((provider) => { %>
+                <div class="stack-row">
+                  <div class="row-stack">
+                    <strong><%= provider.provider %></strong>
+                    <span class="muted small"><%= provider.shipments %> tracked shipments</span>
+                  </div>
+                  <span class="badge badge-slate"><%= provider.share %>% share</span>
+                </div>
+              <% }) %>
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="section-header">
+              <h2>Recent Activity</h2>
+              <a class="link" href="#">View Timeline</a>
+            </div>
+            <div class="stack-list">
+              <% dashboard.activity.forEach((item) => { %>
+                <div class="stack-row">
+                  <div class="row-stack">
+                    <strong><%= item.title %></strong>
+                    <span class="muted small"><%= item.helper %></span>
+                  </div>
+                  <span class="muted small"><%= item.time %></span>
+                </div>
+              <% }) %>
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="section-header">
+              <h2>Wallet Transactions</h2>
+              <a class="link" href="#">View Ledger</a>
+            </div>
+            <div class="stack-list">
+              <% dashboard.walletTransactions.forEach((txn) => { %>
+                <div class="stack-row">
+                  <div class="row-stack">
+                    <strong><%= txn.title %></strong>
+                    <span class="muted small"><%= txn.date %></span>
+                  </div>
+                  <span class="badge <%= txn.type === 'credit' ? 'badge-green' : 'badge-amber' %>"><%= txn.amount %></span>
+                </div>
+              <% }) %>
+            </div>
           </article>
         </section>
 
         <section class="card">
           <div class="section-header">
-            <h2>Latest Orders</h2>
-            <span class="badge">Recent</span>
+            <h2>Recent Orders</h2>
+            <a class="link" href="/orders">View All Orders</a>
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Order</th><th>Customer</th><th>Pincode</th><th>Payment</th><th>Shipment</th></tr></thead>
+              <thead><tr><th>Order ID</th><th>Customer</th><th>Shipment Label</th><th>Type</th><th>Status</th><th>Date</th></tr></thead>
               <tbody>
-                <% latestOrders.forEach((order) => { %>
-                  <% const latestShipment = order.shipments[0]; %>
+                <% dashboard.recentOrders.forEach((order) => { %>
                   <tr>
-                    <td><%= order.orderNumber %></td>
+                    <td><strong><%= order.orderId %></strong></td>
                     <td><%= order.customerName %></td>
-                    <td><%= order.pincode %></td>
-                    <td><span class="badge <%= order.paymentMode === 'COD' ? 'badge-amber' : 'badge-blue' %>"><%= order.paymentMode %></span></td>
+                    <td><%= order.shipmentLabel %></td>
+                    <td><span class="badge <%= order.orderType === 'COD' ? 'badge-amber' : 'badge-blue' %>"><%= order.orderType %></span></td>
                     <td>
-                      <span class="badge <%= latestShipment ? 'badge-green' : 'badge-slate' %>">
-                        <%= latestShipment ? 'Booked' : 'Pending' %>
+                      <span class="badge <%= order.status === 'Delivered' ? 'badge-green' : order.status === 'In Transit' ? 'badge-blue' : order.status === 'Booked' ? 'badge-slate' : 'badge-amber' %>">
+                        <%= order.status %>
                       </span>
                     </td>
+                    <td><%= order.date %></td>
                   </tr>
                 <% }) %>
               </tbody>
