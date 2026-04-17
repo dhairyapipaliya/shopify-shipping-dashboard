@@ -25,14 +25,30 @@
             <table>
               <thead><tr><th>Order</th><th>Provider</th><th>Service</th><th>AWB</th><th>Label</th><th>Tracking</th><th>Status</th></tr></thead>
               <tbody>
+                <% const renderedRows = new Set(); %>
                 <% shipments.forEach((s) => { %>
+                  <% const dedupeKey = `${s.orderId}:${s.id}`; %>
+                  <% if (renderedRows.has(dedupeKey)) { return; } %>
+                  <% renderedRows.add(dedupeKey); %>
                   <tr>
                     <td><%= s.order.orderNumber %></td>
                     <td><%= s.provider %></td>
                     <td><%= s.serviceName %></td>
-                    <td><%= s.awbNumber %></td>
-                    <td><a class="link" href="<%= s.labelUrl %>" target="_blank">Download Label</a></td>
-                    <td><a class="link" href="<%= s.trackingUrl %>" target="_blank">Track</a></td>
+                    <td><%= s.awbNumber || '-' %></td>
+                    <td>
+                      <% if (s.labelUrl) { %>
+                        <a class="link" href="<%= s.labelUrl %>" target="_blank" rel="noreferrer">Download Label</a>
+                      <% } else { %>
+                        -
+                      <% } %>
+                    </td>
+                    <td>
+                      <% if (s.trackingUrl) { %>
+                        <a class="link" href="<%= s.trackingUrl %>" target="_blank" rel="noreferrer">Track</a>
+                      <% } else { %>
+                        -
+                      <% } %>
+                    </td>
                     <td><span class="badge badge-blue"><%= s.status %></span></td>
                   </tr>
                 <% }) %>
