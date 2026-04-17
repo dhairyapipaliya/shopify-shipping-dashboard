@@ -28,11 +28,24 @@
             <form method="get" action="/orders" class="orders-filter-form">
               <label for="status" class="small">Filter by Status</label>
               <div class="orders-filter-controls">
-                <select id="status" name="status" onchange="this.form.submit()">
-                  <% statusOptions.forEach((option) => { %>
-                    <option value="<%= option.value %>" <%= selectedStatus === option.value ? 'selected' : '' %>><%= option.label %></option>
-                  <% }) %>
-                </select>
+                <div class="custom-select" data-custom-select>
+                  <select id="status" name="status" onchange="this.form.submit()">
+                    <% statusOptions.forEach((option) => { %>
+                      <option value="<%= option.value %>" <%= selectedStatus === option.value ? 'selected' : '' %>><%= option.label %></option>
+                    <% }) %>
+                  </select>
+                  <button
+                    class="custom-select-trigger"
+                    type="button"
+                    aria-haspopup="listbox"
+                    aria-expanded="false"
+                    aria-controls="status-options"
+                  >
+                    <span class="custom-select-value">All</span>
+                    <span class="custom-select-arrow" aria-hidden="true"></span>
+                  </button>
+                  <ul class="custom-select-dropdown" id="status-options" role="listbox" hidden></ul>
+                </div>
                 <noscript><button class="btn btn-sm" type="submit">Apply</button></noscript>
               </div>
             </form>
@@ -78,5 +91,6 @@
       </main>
     </div>
   </div>
+  <script src="/public/js/customSelect.js"></script>
 </body>
 </html>
