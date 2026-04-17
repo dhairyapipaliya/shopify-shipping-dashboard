@@ -22,12 +22,28 @@ ordersRouter.post("/orders/sync", requireAuth, async (_req, res) => {
 });
 
 ordersRouter.get("/orders", requireAuth, async (_req, res) => {
-  const orders = await prisma.order.findMany({ orderBy: { createdAt: "desc" } });
+  const orders = await prisma.order.findMany({
+    orderBy: { createdAt: "desc" },
+    include: {
+      shipments: {
+        orderBy: { createdAt: "desc" },
+        take: 1
+      }
+    }
+  });
   res.render("orders", { orders });
 });
 
 ordersRouter.get("/orders/:id/quotes", requireAuth, async (req, res) => {
-  const order = await prisma.order.findUnique({ where: { id: req.params.id } });
+  const order = await prisma.order.findUnique({
+    where: { id: req.params.id },
+    include: {
+      shipments: {
+        orderBy: { createdAt: "desc" },
+        take: 1
+      }
+    }
+  });
 
   if (!order) {
     res.status(404).send("Order not found");

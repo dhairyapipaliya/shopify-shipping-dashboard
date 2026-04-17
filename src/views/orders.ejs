@@ -29,13 +29,23 @@
               <thead><tr><th>Order</th><th>Customer</th><th>Weight(g)</th><th>Pincode</th><th>Payment</th><th>Action</th></tr></thead>
               <tbody>
               <% orders.forEach((order) => { %>
+              <% const latestShipment = order.shipments[0]; %>
               <tr>
                 <td><%= order.orderNumber %></td>
                 <td><%= order.customerName %></td>
                 <td><%= order.totalWeightGrams %></td>
                 <td><%= order.pincode %></td>
                 <td><span class="badge <%= order.paymentMode === 'COD' ? 'badge-amber' : 'badge-blue' %>"><%= order.paymentMode %></span></td>
-                <td><a class="link" href="/orders/<%= order.id %>/quotes">Compare Cheapest Delhivery Option</a></td>
+                <td>
+                  <% if (latestShipment) { %>
+                    <div class="row-stack">
+                      <span class="badge badge-green">Booked</span>
+                      <span class="muted small">Shipment <%= latestShipment.status %></span>
+                    </div>
+                  <% } else { %>
+                    <a class="link" href="/orders/<%= order.id %>/quotes">Compare Cheapest Delhivery Option</a>
+                  <% } %>
+                </td>
               </tr>
               <% }) %>
               </tbody>

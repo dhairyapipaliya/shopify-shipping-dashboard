@@ -221,6 +221,13 @@ input:focus, select:focus {
 .btn:hover { background: var(--primary-strong); }
 .btn-sm { padding: 8px 12px; font-size: .88rem; }
 .btn-block { width: 100%; }
+.btn:disabled {
+  background: #cbd5e1;
+  color: #475569;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.btn:disabled:hover { background: #cbd5e1; }
 
 .btn-ghost {
   background: transparent;
@@ -247,6 +254,12 @@ input:focus, select:focus {
 .link:hover { text-decoration: underline; }
 
 .muted { color: var(--text-muted); }
+.small { font-size: .78rem; }
+.row-stack { display: grid; gap: 4px; }
+.booked-card {
+  border-color: #86efac;
+  background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 35%);
+}
 .error { color: #b91c1c; margin: 10px 0; font-weight: 600; }
 
 .auth-body { background: radial-gradient(circle at top, #e2e8f0 0%, #f3f5f9 40%); }

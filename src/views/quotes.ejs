@@ -20,9 +20,21 @@
       </header>
 
       <main class="container">
+        <% const existingShipment = order.shipments[0]; %>
         <section class="card">
           <p>Comparing only Delhivery Direct vs Delhivery via Shipmozo. Recommendation is always based on the cheapest total shipping cost.</p>
         </section>
+
+        <% if (existingShipment) { %>
+          <section class="card booked-card">
+            <div class="section-header">
+              <h3>Shipment already created for this order</h3>
+              <span class="badge badge-green">Booked</span>
+            </div>
+            <p><strong><%= existingShipment.provider %></strong> · <%= existingShipment.serviceName %></p>
+            <p class="muted">AWB: <%= existingShipment.awbNumber %> · Status: <%= existingShipment.status %></p>
+          </section>
+        <% } %>
 
         <% if (cheapest) { %>
           <section class="card">
@@ -53,10 +65,17 @@
                     </span>
                   </td>
                   <td>
-                    <form method="post" action="/orders/<%= order.id %>/book">
+                    <form
+                      method="post"
+                      action="/orders/<%= order.id %>/book"
+                      data-booked="<%= existingShipment ? 'true' : 'false' %>"
+                      onsubmit="return guardBooking(event)"
+                    >
                       <input type="hidden" name="provider" value="<%= q.provider %>" />
                       <input type="hidden" name="serviceName" value="<%= q.serviceName %>" />
-                      <button class="btn btn-sm" type="submit">Select &amp; Book</button>
+                      <button class="btn btn-sm" type="submit" <%= existingShipment ? 'disabled' : '' %>>
+                        <%= existingShipment ? 'Already Booked' : 'Select & Book' %>
+                      </button>
                     </form>
                   </td>
                 </tr>
@@ -68,5 +87,22 @@
       </main>
     </div>
   </div>
+  <script>
+    function guardBooking(event) {
+      const form = event.target;
+      if (form.dataset.booked === "true") {
+        event.preventDefault();
+        return false;
+      }
+
+      const submitButton = form.querySelector('button[type="submit"]');
+      if (submitButton && submitButton.disabled) {
+        event.preventDefault();
+        return false;
+      }
+
+      return true;
+    }
+  </script>
 </body>
 </html>

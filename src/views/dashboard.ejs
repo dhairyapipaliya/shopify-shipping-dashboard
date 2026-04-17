@@ -43,14 +43,20 @@
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Order</th><th>Customer</th><th>Pincode</th><th>Payment</th></tr></thead>
+              <thead><tr><th>Order</th><th>Customer</th><th>Pincode</th><th>Payment</th><th>Shipment</th></tr></thead>
               <tbody>
                 <% latestOrders.forEach((order) => { %>
+                  <% const latestShipment = order.shipments[0]; %>
                   <tr>
                     <td><%= order.orderNumber %></td>
                     <td><%= order.customerName %></td>
                     <td><%= order.pincode %></td>
                     <td><span class="badge <%= order.paymentMode === 'COD' ? 'badge-amber' : 'badge-blue' %>"><%= order.paymentMode %></span></td>
+                    <td>
+                      <span class="badge <%= latestShipment ? 'badge-green' : 'badge-slate' %>">
+                        <%= latestShipment ? 'Booked' : 'Pending' %>
+                      </span>
+                    </td>
                   </tr>
                 <% }) %>
               </tbody>
