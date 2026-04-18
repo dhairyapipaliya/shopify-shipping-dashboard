@@ -36,39 +36,51 @@ const formatCurrency = (value: number) => `₹${value.toLocaleString("en-IN", { 
 
 export const formatOrderCurrency = formatCurrency;
 
-const formatDateTime = (isoDate: string | Date) => {
-  const date = new Date(isoDate);
+const DEFAULT_DATE = new Date(0);
+
+const toSafeDate = (value: string | Date | null | undefined) => {
+  const date = value ? new Date(value) : DEFAULT_DATE;
+  return Number.isNaN(date.getTime()) ? DEFAULT_DATE : date;
+};
+
+const formatDateTime = (value: string | Date | null | undefined) => {
+  const date = toSafeDate(value);
   return {
     dateLabel: new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" }).format(date),
     timeLabel: new Intl.DateTimeFormat("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true }).format(date)
   };
 };
 
+const normalizePaymentType = (paymentMode: string | null | undefined): OrdersPageRow["paymentType"] => {
+  const normalized = String(paymentMode ?? "").trim().toUpperCase();
+  return normalized === "COD" ? "COD" : "Prepaid";
+};
+
 export const mapMockOrderToRow = (order: SharedShopifyOrder): OrdersPageRow => {
   const { dateLabel, timeLabel } = formatDateTime(order.created_at);
-  const productNames = order.line_items.map((item) => item.title).join(", ");
-  const skuSummary = order.line_items.map((item) => item.sku).filter(Boolean).join(", ") || "—";
-  const quantityTotal = order.line_items.reduce((sum, item) => sum + item.quantity, 0);
+  const productNames = order.line_items?.map((item) => item.title).join(", ") || "—";
+  const skuSummary = order.line_items?.map((item) => item.sku).filter(Boolean).join(", ") || "—";
+  const quantityTotal = order.line_items?.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
 
   return {
     id: order.order_id,
     source: "mock",
-    orderDateTime: order.created_at,
+    orderDateTime: toSafeDate(order.created_at).toISOString(),
     orderDateLabel: dateLabel,
     orderTimeLabel: timeLabel,
     orderNumber: order.order_number,
     referenceId: order.reference_id,
     productsSummary: productNames,
-    productCount: order.line_items.length,
+    productCount: order.line_items?.length ?? 0,
     skuSummary,
     quantityTotal,
-    weightKg: order.package_details.weight_kg,
-    dimensionsLabel: `${order.package_details.dimensions_cm.length} x ${order.package_details.dimensions_cm.width} x ${order.package_details.dimensions_cm.height}`,
+    weightKg: order.package_details?.weight_kg ?? 0,
+    dimensionsLabel: `${order.package_details?.dimensions_cm.length ?? 0} x ${order.package_details?.dimensions_cm.width ?? 0} x ${order.package_details?.dimensions_cm.height ?? 0}`,
     paymentAmount: order.total_price,
-    paymentType: order.payment_type,
-    shippingName: order.shipping_address.name,
-    shippingAddress: [order.shipping_address.address1, order.shipping_address.address2].filter(Boolean).join(", "),
-    cityStatePincode: `${order.shipping_address.city}, ${order.shipping_address.province} - ${order.shipping_address.zip}`,
+    paymentType: normalizePaymentType(order.payment_type),
+    shippingName: order.shipping_address?.name ?? "—",
+    shippingAddress: [order.shipping_address?.address1, order.shipping_address?.address2].filter(Boolean).join(", ") || "—",
+    cityStatePincode: `${order.shipping_address?.city ?? "—"}, ${order.shipping_address?.province ?? "—"} - ${order.shipping_address?.zip ?? "—"}`,
     operationalStatus: order.fulfillment_status,
     operationalStatusLabel: getOrderStatusLabel(order.fulfillment_status),
     operationalStatusBadgeClass: getOrderStatusBadgeClass(order.fulfillment_status),
@@ -79,13 +91,13 @@ export const mapMockOrderToRow = (order: SharedShopifyOrder): OrdersPageRow => {
 export const mapDbOrderToRow = (order: Order & { shipments: Shipment[] }): OrdersPageRow => {
   const latestShipment = order.shipments?.[0] ?? null;
   const status = deriveOrderOperationalStatus(latestShipment);
-  const { dateLabel, timeLabel } = formatDateTime(order.createdAt ?? new Date());
-  const paymentType = String(order.paymentMode ?? "").toUpperCase() === "COD" ? "COD" : "Prepaid";
+  const createdAt = toSafeDate(order.createdAt);
+  const { dateLabel, timeLabel } = formatDateTime(createdAt);
 
   return {
     id: order.id,
     source: "db",
-    orderDateTime: order.createdAt?.toISOString?.() ?? new Date(0).toISOString(),
+    orderDateTime: createdAt.toISOString(),
     orderDateLabel: dateLabel,
     orderTimeLabel: timeLabel,
     orderNumber: order.orderNumber,
@@ -97,7 +109,7 @@ export const mapDbOrderToRow = (order: Order & { shipments: Shipment[] }): Order
     weightKg: order.totalWeightGrams / 1000,
     dimensionsLabel: `${order.lengthCm} x ${order.widthCm} x ${order.heightCm}`,
     paymentAmount: order.orderValue,
-    paymentType,
+    paymentType: normalizePaymentType(order.paymentMode),
     shippingName: order.customerName,
     shippingAddress: [order.addressLine1, order.addressLine2].filter(Boolean).join(", ") || "—",
     cityStatePincode: `${order.city}, ${order.state} - ${order.pincode}`,
