@@ -58,33 +58,89 @@
             </div>
           <% } else { %>
           <div class="table-wrap">
-            <table>
-              <thead><tr><th>Order</th><th>Customer</th><th>Weight(g)</th><th>Pincode</th><th>Payment</th><th>Status</th><th>Action</th></tr></thead>
+            <table class="orders-operations-table">
+              <thead>
+                <tr>
+                  <th>Order Date</th>
+                  <th>Order Details</th>
+                  <th>Product Details</th>
+                  <th>Package Details</th>
+                  <th>Payment</th>
+                  <th>Shipping Details</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
               <tbody>
               <% orders.forEach((order) => { %>
               <tr>
-                <td><%= order.orderNumber %></td>
-                <td><%= order.customerName %></td>
-                <td><%= order.totalWeightGrams %></td>
-                <td><%= order.pincode %></td>
-                <td><span class="badge <%= order.paymentMode === 'COD' ? 'badge-amber' : 'badge-blue' %>"><%= order.paymentMode %></span></td>
+                <td>
+                  <div class="cell-stack">
+                    <strong><%= order.orderDateLabel %></strong>
+                    <span class="muted small"><%= order.orderTimeLabel %></span>
+                  </div>
+                </td>
+                <td>
+                  <div class="cell-stack">
+                    <strong><%= order.orderNumber %></strong>
+                    <span class="muted small">Ref: <%= order.referenceId %></span>
+                  </div>
+                </td>
+                <td>
+                  <div class="cell-stack">
+                    <strong><%= order.productsSummary %></strong>
+                    <span class="muted small">SKU: <%= order.skuSummary %></span>
+                    <span class="muted small">Qty: <%= order.quantityTotal %></span>
+                  </div>
+                </td>
+                <td>
+                  <div class="cell-stack">
+                    <span><strong><%= order.weightKg %> kg</strong></span>
+                    <span class="muted small"><%= order.dimensionsLabel %> cm</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="cell-stack">
+                    <strong>₹<%= order.paymentAmount.toLocaleString('en-IN') %></strong>
+                    <span class="badge <%= order.paymentType === 'COD' ? 'badge-amber' : 'badge-blue' %>"><%= order.paymentType %></span>
+                  </div>
+                </td>
+                <td>
+                  <div class="cell-stack">
+                    <strong><%= order.shippingName %></strong>
+                    <span class="muted small"><%= order.shippingAddress %></span>
+                    <span class="muted small"><%= order.cityStatePincode %></span>
+                  </div>
+                </td>
                 <td>
                   <span class="badge <%= order.operationalStatusBadgeClass %>"><%= order.operationalStatusLabel %></span>
                 </td>
                 <td>
                   <% if (order.latestShipment) { %>
                     <div class="row-stack">
-                      <span class="badge badge-blue">Pickup Scheduled</span>
+                      <span class="badge <%= order.operationalStatusBadgeClass %>"><%= order.operationalStatusLabel %></span>
                       <span class="muted small">Shipment <%= order.latestShipment.status %></span>
                     </div>
+                  <% } else if (order.source === 'db') { %>
+                    <a class="link" href="/orders/<%= order.id %>/quotes">Assign Courier</a>
                   <% } else { %>
-                    <a class="link" href="/orders/<%= order.id %>/quotes">Compare Cheapest Delhivery Option</a>
+                    <button class="btn btn-sm" type="button" disabled>Assign Courier</button>
+                    <p class="muted small">Demo order</p>
                   <% } %>
                 </td>
               </tr>
               <% }) %>
               </tbody>
             </table>
+          </div>
+
+          <div class="orders-status-pills" aria-label="Quick status filters">
+            <% statusOptions.forEach((option) => { %>
+              <a
+                href="/orders?status=<%= option.value %>"
+                class="status-pill <%= selectedStatus === option.value ? 'is-active' : '' %>"
+              ><%= option.label %></a>
+            <% }) %>
           </div>
           <% } %>
         </section>

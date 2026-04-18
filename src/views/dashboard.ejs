@@ -162,9 +162,7 @@
                     <td><%= order.shipmentLabel %></td>
                     <td><span class="badge <%= order.orderType === 'COD' ? 'badge-amber' : 'badge-blue' %>"><%= order.orderType %></span></td>
                     <td>
-                      <span class="badge <%= order.status === 'Delivered' ? 'badge-green' : order.status === 'In Transit' ? 'badge-blue' : order.status === 'Pickup Scheduled' ? 'badge-slate' : 'badge-amber' %>">
-                        <%= order.status %>
-                      </span>
+                      <span class="badge <%= order.statusBadgeClass %>"><%= order.status %></span>
                     </td>
                     <td><%= order.date %></td>
                   </tr>

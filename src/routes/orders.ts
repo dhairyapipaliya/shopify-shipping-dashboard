@@ -4,14 +4,9 @@ import { requireAuth } from "../middleware/auth.js";
 import { rankQuotes } from "../services/quoteEngine.js";
 import { providerRegistry } from "../services/providers/providerRegistry.js";
 import { fetchShopifyOrders } from "../services/shopify/shopifyClient.js";
-import {
-  deriveOrderOperationalStatus,
-  getOrderStatusBadgeClass,
-  getOrderStatusLabel,
-  matchesOrderStatusFilter,
-  orderStatusFilters,
-  parseOrderStatusFilter
-} from "../utils/orderStatuses.js";
+import { matchesOrderStatusFilter, orderStatusFilters, parseOrderStatusFilter } from "../utils/orderStatuses.js";
+import { sharedDummyOrders } from "../data/sharedOrders.js";
+import { mapDbOrderToRow, mapMockOrderToRow } from "../utils/orderViewModel.js";
 
 export const ordersRouter = Router();
 
@@ -42,18 +37,9 @@ ordersRouter.get("/orders", requireAuth, async (req, res) => {
     }
   });
 
-  const orderRows = orders.map((order) => {
-    const latestShipment = order.shipments[0];
-    const operationalStatus = deriveOrderOperationalStatus(latestShipment);
-
-    return {
-      ...order,
-      latestShipment,
-      operationalStatus,
-      operationalStatusLabel: getOrderStatusLabel(operationalStatus),
-      operationalStatusBadgeClass: getOrderStatusBadgeClass(operationalStatus)
-    };
-  });
+  const dbOrderRows = orders.map((order) => mapDbOrderToRow(order));
+  const mockOrderRows = sharedDummyOrders.map((order) => mapMockOrderToRow(order));
+  const orderRows = dbOrderRows.length ? dbOrderRows : mockOrderRows;
 
   const filteredOrders = orderRows.filter((order) => matchesOrderStatusFilter(order.operationalStatus, selectedStatus));
 
