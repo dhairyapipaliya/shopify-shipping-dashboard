@@ -26,7 +26,7 @@
         <section class="card">
           <% if (updatedOrder) { %>
             <div class="dispatch-selection-banner">
-              <p><strong>Dispatch updated:</strong> Order moved to <strong>Pickups &amp; Manifests</strong>. Label and manifest actions are now available.</p>
+              <p><strong>Order updated:</strong> shared frontend order state refreshed for status, actions, and counts.</p>
             </div>
           <% } %>
           <div class="orders-toolbar">
@@ -44,7 +44,10 @@
                         class="workflow-tab <%= selectedStatus === option.value ? 'is-active' : '' %>"
                         role="tab"
                         aria-selected="<%= selectedStatus === option.value ? 'true' : 'false' %>"
-                      ><%= option.label %></a>
+                      >
+                        <span class="workflow-tab-label"><%= option.label %></span>
+                        <span class="workflow-count-badge"><%= statusCounts[option.value] ?? 0 %></span>
+                      </a>
                     <% }) %>
                   </div>
                 </section>
@@ -69,6 +72,7 @@
                   <th>Payment</th>
                   <th>Shipping Details</th>
                   <th>Courier Selection</th>
+                  <th>Tracking Info</th>
                   <th>Status</th>
                   <th>Action</th>
                 </tr>
@@ -97,8 +101,24 @@
                 </td>
                 <td>
                   <div class="cell-stack">
-                    <span><strong><%= order.weightKg %> kg</strong></span>
+                    <div class="inline-split">
+                      <span><strong><%= order.weightKg %> kg</strong></span>
+                      <% if (order.operationalStatus === 'new') { %>
+                      <button
+                        class="icon-btn"
+                        type="button"
+                        data-package-editor
+                        data-order-id="<%= order.id %>"
+                        data-package-mode="<%= order.packageMode %>"
+                        data-total-weight="<%= order.weightKg %>"
+                        data-boxes="<%= encodeURIComponent(JSON.stringify(order.packageBoxes)) %>"
+                        title="Edit package details"
+                        aria-label="Edit package details"
+                      >✎</button>
+                      <% } %>
+                    </div>
                     <span class="muted small"><%= order.dimensionsLabel %> cm</span>
+                    <span class="muted small"><%= order.boxCount %> box · <%= order.packageMode === 'MULTI_PACKAGE_B2B' ? 'Multiple Package (B2B)' : 'Single Package (B2C)' %></span>
                   </div>
                 </td>
                 <td>
@@ -121,6 +141,20 @@
                   </div>
                 </td>
                 <td>
+                  <% if (order.operationalStatus !== 'new') { %>
+                    <div class="tracking-block">
+                      <span class="muted small"><strong><%= order.trackingCourierName %></strong> · <%= order.trackingServiceName %></span>
+                      <span class="tracking-awb">
+                        AWB: <span data-awb-value><%= order.awbNumber %></span>
+                        <button type="button" class="copy-awb-btn" data-copy-awb="<%= order.awbNumber %>">Copy</button>
+                      </span>
+                      <span class="muted small">Status: <%= order.trackingStatusText %></span>
+                    </div>
+                  <% } else { %>
+                    <span class="muted small">Tracking info appears after courier assignment.</span>
+                  <% } %>
+                </td>
+                <td>
                   <span class="badge <%= order.operationalStatusBadgeClass %>"><%= order.operationalStatusLabel %></span>
                 </td>
                 <td>
@@ -130,12 +164,12 @@
                       <span class="muted small">Shipment <%= order.latestShipment.status %></span>
                     </div>
                   <% } else if (order.operationalStatus === 'pickupsAndManifests') { %>
-                    <div class="row-stack">
+                    <div class="row-stack action-row-equal">
                       <form method="post" action="/orders/<%= encodeURIComponent(order.id) %>/print-label">
-                        <button class="btn btn-sm btn-soft" type="submit">Print Label</button>
+                        <button class="btn btn-sm btn-soft action-btn-equal" type="submit">Print Label</button>
                       </form>
                       <form method="post" action="/orders/<%= encodeURIComponent(order.id) %>/manifest">
-                        <button class="btn btn-sm btn-soft" type="submit">Manifest</button>
+                        <button class="btn btn-sm btn-soft action-btn-equal" type="submit">Manifest</button>
                       </form>
                     </div>
                   <% } else if (order.operationalStatus !== 'new') { %>
@@ -143,7 +177,19 @@
                   <% } else if (order.source === 'db') { %>
                     <a class="link" href="/orders/<%= order.id %>/quotes">Assign Courier</a>
                   <% } else { %>
-                    <a class="link" href="/dispatch/<%= encodeURIComponent(order.id) %>">Assign Courier</a>
+                    <div class="new-order-actions">
+                      <a class="btn btn-sm" href="/dispatch/<%= encodeURIComponent(order.id) %>">Assign Courier</a>
+                      <details class="action-menu">
+                        <summary class="icon-btn" aria-label="Order actions">▾</summary>
+                        <div class="action-menu-list">
+                          <form method="post" action="/orders/<%= encodeURIComponent(order.id) %>/actions"><input type="hidden" name="action" value="editOrder" /><button type="submit" class="action-menu-item">Edit Order</button></form>
+                          <form method="post" action="/orders/<%= encodeURIComponent(order.id) %>/actions"><input type="hidden" name="action" value="archive" /><button type="submit" class="action-menu-item">Archive Order</button></form>
+                          <form method="post" action="/orders/<%= encodeURIComponent(order.id) %>/actions"><input type="hidden" name="action" value="changePickupAddress" /><button type="submit" class="action-menu-item">Change Pickup Address</button></form>
+                          <form method="post" action="/orders/<%= encodeURIComponent(order.id) %>/actions"><input type="hidden" name="action" value="clone" /><button type="submit" class="action-menu-item">Clone Order</button></form>
+                          <form method="post" action="/orders/<%= encodeURIComponent(order.id) %>/actions" onsubmit="return confirm('Delete this order? This action cannot be undone.');"><input type="hidden" name="action" value="delete" /><button type="submit" class="action-menu-item danger">Delete Order</button></form>
+                        </div>
+                      </details>
+                    </div>
                   <% } %>
                 </td>
               </tr>
@@ -156,5 +202,135 @@
       </main>
     </div>
   </div>
+
+  <dialog id="packageEditDialog" class="package-modal">
+    <form method="post" id="packageEditForm" class="package-form">
+      <h3>Edit package details</h3>
+      <input type="hidden" name="orderId" id="packageOrderId" />
+      <label>
+        Package type
+        <select name="packageMode" id="packageModeSelect">
+          <option value="SINGLE_PACKAGE_B2C">Single Package (B2C)</option>
+          <option value="MULTI_PACKAGE_B2B">Multiple Package (B2B)</option>
+        </select>
+      </label>
+      <label>
+        Total weight (kg)
+        <input type="number" step="0.01" min="0.01" name="totalWeightKg" id="totalWeightKg" required />
+      </label>
+      <div class="box-rows" id="boxRows"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-soft" id="addBoxBtn">Add box</button>
+        <div class="modal-footer-right">
+          <button type="button" class="btn btn-sm btn-soft" id="closePackageModal">Cancel</button>
+          <button type="submit" class="btn btn-sm">Save package</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="awbCopyToast" class="copy-toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      const dialog = document.getElementById('packageEditDialog');
+      const form = document.getElementById('packageEditForm');
+      const boxRows = document.getElementById('boxRows');
+      const addBoxBtn = document.getElementById('addBoxBtn');
+      const packageModeSelect = document.getElementById('packageModeSelect');
+      const totalWeightInput = document.getElementById('totalWeightKg');
+      const orderIdInput = document.getElementById('packageOrderId');
+      const closeBtn = document.getElementById('closePackageModal');
+      const toast = document.getElementById('awbCopyToast');
+
+      const renderBoxRow = (box, index, allowRemove) => {
+        const row = document.createElement('div');
+        row.className = 'box-row';
+        row.innerHTML = `
+          <p class="small muted">Box ${index + 1}</p>
+          <div class="box-grid">
+            <label>Length (cm)<input required type="number" min="1" step="1" name="boxLengthCm" value="${box.length_cm || ''}" /></label>
+            <label>Width (cm)<input required type="number" min="1" step="1" name="boxWidthCm" value="${box.width_cm || ''}" /></label>
+            <label>Height (cm)<input required type="number" min="1" step="1" name="boxHeightCm" value="${box.height_cm || ''}" /></label>
+            <label>Weight (kg)<input required type="number" min="0.01" step="0.01" name="boxWeightKg" value="${box.weight_kg || ''}" /></label>
+          </div>
+          ${allowRemove ? '<button class="btn btn-sm btn-soft remove-box" type="button">Remove</button>' : ''}
+        `;
+        const removeBtn = row.querySelector('.remove-box');
+        if (removeBtn) {
+          removeBtn.addEventListener('click', () => {
+            row.remove();
+            refreshBoxRows();
+          });
+        }
+        boxRows.appendChild(row);
+      };
+
+      const getCurrentRows = () => Array.from(boxRows.querySelectorAll('.box-row')).map((row) => ({
+        length_cm: Number(row.querySelector('[name="boxLengthCm"]').value) || 0,
+        width_cm: Number(row.querySelector('[name="boxWidthCm"]').value) || 0,
+        height_cm: Number(row.querySelector('[name="boxHeightCm"]').value) || 0,
+        weight_kg: Number(row.querySelector('[name="boxWeightKg"]').value) || 0
+      }));
+
+      const refreshBoxRows = () => {
+        const isMulti = packageModeSelect.value === 'MULTI_PACKAGE_B2B';
+        const boxes = getCurrentRows();
+        boxRows.innerHTML = '';
+        const nextBoxes = boxes.length ? boxes : [{ length_cm: 20, width_cm: 14, height_cm: 7, weight_kg: Number(totalWeightInput.value) || 0.5 }];
+        (isMulti ? nextBoxes : [nextBoxes[0]]).forEach((box, index, arr) => renderBoxRow(box, index, isMulti && arr.length > 1));
+        addBoxBtn.disabled = !isMulti;
+      };
+
+      document.querySelectorAll('[data-package-editor]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const orderId = button.getAttribute('data-order-id');
+          const packageMode = button.getAttribute('data-package-mode');
+          const totalWeight = button.getAttribute('data-total-weight');
+          const boxes = JSON.parse(decodeURIComponent(button.getAttribute('data-boxes') || '%5B%5D'));
+
+          orderIdInput.value = orderId;
+          form.action = `/orders/${encodeURIComponent(orderId)}/package`;
+          packageModeSelect.value = packageMode;
+          totalWeightInput.value = totalWeight;
+
+          boxRows.innerHTML = '';
+          (boxes.length ? boxes : [{ length_cm: 20, width_cm: 14, height_cm: 7, weight_kg: Number(totalWeight) || 0.5 }]).forEach((box, index, arr) => {
+            const isMulti = packageMode === 'MULTI_PACKAGE_B2B';
+            renderBoxRow(box, index, isMulti && arr.length > 1);
+          });
+
+          refreshBoxRows();
+          dialog.showModal();
+        });
+      });
+
+      packageModeSelect.addEventListener('change', refreshBoxRows);
+      addBoxBtn.addEventListener('click', () => {
+        if (packageModeSelect.value !== 'MULTI_PACKAGE_B2B') return;
+        renderBoxRow({ length_cm: 20, width_cm: 14, height_cm: 7, weight_kg: 0.5 }, boxRows.children.length, true);
+        refreshBoxRows();
+      });
+
+      closeBtn.addEventListener('click', () => dialog.close());
+
+      document.querySelectorAll('[data-copy-awb]').forEach((button) => {
+        button.addEventListener('click', async () => {
+          const awb = button.getAttribute('data-copy-awb') || '';
+          if (!awb || awb === 'Pending') return;
+          try {
+            await navigator.clipboard.writeText(awb);
+            toast.textContent = `AWB ${awb} copied`;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 1400);
+          } catch {
+            toast.textContent = 'Unable to copy AWB';
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 1400);
+          }
+        });
+      });
+    })();
+  </script>
 </body>
 </html>

@@ -1,5 +1,6 @@
 import type { Order, Shipment } from "@prisma/client";
 import type { SharedShopifyOrder } from "../data/sharedOrders.js";
+import { PACKAGE_MODE, type PackageMode } from "./packageMode.js";
 import {
   deriveOrderOperationalStatus,
   getOrderStatusBadgeClass,
@@ -21,6 +22,9 @@ export type OrdersPageRow = {
   quantityTotal: number;
   weightKg: number;
   dimensionsLabel: string;
+  packageMode: PackageMode;
+  boxCount: number;
+  packageBoxes: Array<{ length_cm: number; width_cm: number; height_cm: number; weight_kg: number }>;
   paymentAmount: number;
   paymentType: "Prepaid" | "COD";
   shippingName: string;
@@ -31,12 +35,14 @@ export type OrdersPageRow = {
   operationalStatusBadgeClass: string;
   selectedCourierSummary: string;
   selectedCourierMeta: string;
+  trackingCourierName: string;
+  trackingServiceName: string;
+  awbNumber: string;
+  trackingStatusText: string;
+  labelReference: string;
+  manifestReference: string;
   latestShipment?: Shipment | null;
 };
-
-const formatCurrency = (value: number) => `₹${value.toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
-
-export const formatOrderCurrency = formatCurrency;
 
 const DEFAULT_DATE = new Date(0);
 
@@ -63,6 +69,7 @@ export const mapMockOrderToRow = (order: SharedShopifyOrder): OrdersPageRow => {
   const productNames = order.line_items?.map((item) => item.title).join(", ") || "—";
   const skuSummary = order.line_items?.map((item) => item.sku).filter(Boolean).join(", ") || "—";
   const quantityTotal = order.line_items?.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
+  const firstBox = order.package_details.boxes[0];
 
   return {
     id: order.order_id,
@@ -76,8 +83,16 @@ export const mapMockOrderToRow = (order: SharedShopifyOrder): OrdersPageRow => {
     productCount: order.line_items?.length ?? 0,
     skuSummary,
     quantityTotal,
-    weightKg: order.package_details?.weight_kg ?? 0,
-    dimensionsLabel: `${order.package_details?.dimensions_cm.length ?? 0} x ${order.package_details?.dimensions_cm.width ?? 0} x ${order.package_details?.dimensions_cm.height ?? 0}`,
+    weightKg: order.package_details?.total_weight_kg ?? 0,
+    dimensionsLabel: `${firstBox?.length_cm ?? 0} x ${firstBox?.width_cm ?? 0} x ${firstBox?.height_cm ?? 0}`,
+    packageMode: order.package_details.package_mode,
+    boxCount: order.package_details.boxes.length,
+    packageBoxes: order.package_details.boxes.map((box) => ({
+      length_cm: box.length_cm,
+      width_cm: box.width_cm,
+      height_cm: box.height_cm,
+      weight_kg: box.weight_kg
+    })),
     paymentAmount: order.total_price,
     paymentType: normalizePaymentType(order.payment_type),
     shippingName: order.shipping_address?.name ?? "—",
@@ -92,6 +107,12 @@ export const mapMockOrderToRow = (order: SharedShopifyOrder): OrdersPageRow => {
     selectedCourierMeta: order.selected_courier
       ? `${order.selected_courier.service_type} · ${order.selected_courier.source_name}`
       : "Select a courier from Dispatch",
+    trackingCourierName: order.selected_courier?.provider_name ?? order.assigned_provider,
+    trackingServiceName: order.selected_courier ? `${order.selected_courier.service_name} (${order.selected_courier.service_type})` : "Pending assignment",
+    awbNumber: order.awb_number ?? "Pending",
+    trackingStatusText: order.tracking_status ?? (order.workflow_status === "new" ? "Awaiting courier assignment" : "Pending partner status"),
+    labelReference: order.selected_courier?.label_url ?? order.selected_courier?.label_reference ?? "Pending",
+    manifestReference: order.selected_courier?.manifest_url ?? order.selected_courier?.manifest_reference ?? "Pending",
     latestShipment: null
   };
 };
@@ -116,6 +137,9 @@ export const mapDbOrderToRow = (order: Order & { shipments: Shipment[] }): Order
     quantityTotal: 0,
     weightKg: order.totalWeightGrams / 1000,
     dimensionsLabel: `${order.lengthCm} x ${order.widthCm} x ${order.heightCm}`,
+    packageMode: PACKAGE_MODE.SINGLE_PACKAGE_B2C,
+    boxCount: 1,
+    packageBoxes: [{ length_cm: order.lengthCm, width_cm: order.widthCm, height_cm: order.heightCm, weight_kg: order.totalWeightGrams / 1000 }],
     paymentAmount: order.orderValue,
     paymentType: normalizePaymentType(order.paymentMode),
     shippingName: order.customerName,
@@ -126,6 +150,12 @@ export const mapDbOrderToRow = (order: Order & { shipments: Shipment[] }): Order
     operationalStatusBadgeClass: getOrderStatusBadgeClass(status),
     selectedCourierSummary: latestShipment ? `Shipment ${latestShipment.provider}` : "Not assigned",
     selectedCourierMeta: latestShipment?.awbNumber ? `AWB: ${latestShipment.awbNumber}` : "Select a courier",
+    trackingCourierName: latestShipment?.provider ?? "Pending",
+    trackingServiceName: latestShipment?.serviceName ?? "Pending",
+    awbNumber: latestShipment?.awbNumber ?? "Pending",
+    trackingStatusText: latestShipment?.status ?? "Pending",
+    labelReference: "Pending",
+    manifestReference: "Pending",
     latestShipment
   };
 };
