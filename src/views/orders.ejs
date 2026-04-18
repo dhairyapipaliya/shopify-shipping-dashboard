@@ -117,6 +117,8 @@
                       <span class="badge <%= order.operationalStatusBadgeClass %>"><%= order.operationalStatusLabel %></span>
                       <span class="muted small">Shipment <%= order.latestShipment.status %></span>
                     </div>
+                  <% } else if (order.operationalStatus !== 'new') { %>
+                    <span class="muted small">No action</span>
                   <% } else if (order.source === 'db') { %>
                     <a class="link" href="/orders/<%= order.id %>/quotes">Assign Courier</a>
                   <% } else { %>
