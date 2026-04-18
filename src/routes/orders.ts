@@ -4,9 +4,9 @@ import { requireAuth } from "../middleware/auth.js";
 import { rankQuotes } from "../services/quoteEngine.js";
 import { providerRegistry } from "../services/providers/providerRegistry.js";
 import { fetchShopifyOrders } from "../services/shopify/shopifyClient.js";
-import { matchesOrderStatusFilter, orderStatusFilters, parseOrderStatusFilter } from "../utils/orderStatuses.js";
+import { matchesOrderStatusFilter, orderStatusFilters, orderStatusWorkflowGroups, parseOrderStatusFilter } from "../utils/orderStatuses.js";
 import { sharedDummyOrders } from "../data/sharedOrders.js";
-import { mapDbOrderToRow, mapMockOrderToRow } from "../utils/orderViewModel.js";
+import { mapMockOrderToRow } from "../utils/orderViewModel.js";
 
 export const ordersRouter = Router();
 
@@ -27,26 +27,14 @@ ordersRouter.post("/orders/sync", requireAuth, async (_req, res) => {
 ordersRouter.get("/orders", requireAuth, async (req, res) => {
   const selectedStatus = parseOrderStatusFilter(req.query.status);
 
-  const orders = await prisma.order.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      shipments: {
-        orderBy: { createdAt: "desc" },
-        take: 1
-      }
-    }
-  });
-
-  const dbOrderRows = orders.map((order) => mapDbOrderToRow(order));
-  const mockOrderRows = sharedDummyOrders.map((order) => mapMockOrderToRow(order));
-  const orderRows = dbOrderRows.length ? dbOrderRows : mockOrderRows;
-
+  const orderRows = sharedDummyOrders.map((order) => mapMockOrderToRow(order));
   const filteredOrders = orderRows.filter((order) => matchesOrderStatusFilter(order.operationalStatus, selectedStatus));
 
   res.render("orders", {
     orders: filteredOrders,
     selectedStatus,
-    statusOptions: orderStatusFilters
+    statusOptions: orderStatusFilters,
+    statusGroups: orderStatusWorkflowGroups
   });
 });
 

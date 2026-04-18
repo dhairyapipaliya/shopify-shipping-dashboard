@@ -33,6 +33,7 @@ export type SharedShopifyOrder = {
   line_items: ShopifyReadyLineItem[];
   total_price: number;
   payment_type: "Prepaid" | "COD";
+  assigned_provider: "Shipmozo" | "Delhivery";
   shipping_address: ShopifyReadyAddress;
   fulfillment_status: OperationalOrderStatus;
   package_details: ShopifyReadyPackageDetails;
@@ -47,6 +48,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
     line_items: [{ title: "Boat Airdopes 141", sku: "AUDIO-BOAT-141", quantity: 1 }],
     total_price: 1499,
     payment_type: "Prepaid",
+    assigned_provider: "Shipmozo",
     shipping_address: {
       name: "Aarav Mehta",
       address1: "Flat 804, Magnolia Residency",
@@ -56,7 +58,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
       zip: "201309",
       country: "India"
     },
-    fulfillment_status: "unbooked",
+    fulfillment_status: "new",
     package_details: {
       weight_kg: 0.45,
       dimensions_cm: { length: 21, width: 15, height: 6 }
@@ -70,6 +72,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
     line_items: [{ title: "Mamaearth Skincare Combo", sku: "BEAUTY-MAMA-SET", quantity: 1 }],
     total_price: 899,
     payment_type: "COD",
+    assigned_provider: "Delhivery",
     shipping_address: {
       name: "Riya Sharma",
       address1: "B-1203, Shree Heights",
@@ -79,7 +82,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
       zip: "400076",
       country: "India"
     },
-    fulfillment_status: "pickupScheduled",
+    fulfillment_status: "courierAssigned",
     package_details: {
       weight_kg: 0.7,
       dimensions_cm: { length: 24, width: 18, height: 10 }
@@ -93,6 +96,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
     line_items: [{ title: "Milton Sports Bottle Pack", sku: "HOME-MILTON-3PK", quantity: 2 }],
     total_price: 1298,
     payment_type: "Prepaid",
+    assigned_provider: "Shipmozo",
     shipping_address: {
       name: "Kabir Khan",
       address1: "House 17, Green Avenue",
@@ -102,7 +106,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
       zip: "500034",
       country: "India"
     },
-    fulfillment_status: "inTransit",
+    fulfillment_status: "archive",
     package_details: {
       weight_kg: 1.2,
       dimensions_cm: { length: 30, width: 22, height: 14 }
@@ -116,6 +120,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
     line_items: [{ title: "Noise Buds VS104", sku: "AUDIO-NOISE-104", quantity: 1 }],
     total_price: 1699,
     payment_type: "COD",
+    assigned_provider: "Delhivery",
     shipping_address: {
       name: "Neha Verma",
       address1: "Plot 22, Shivaji Nagar",
@@ -138,6 +143,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
     line_items: [{ title: "HRX Cotton T-Shirt Set", sku: "APPAREL-HRX-TS2", quantity: 2 }],
     total_price: 1899,
     payment_type: "Prepaid",
+    assigned_provider: "Shipmozo",
     shipping_address: {
       name: "Ishaan Das",
       address1: "16 Lake View Road",
@@ -161,6 +167,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
     line_items: [{ title: "Home Puff Kitchen Organizer", sku: "HOME-ORG-SET", quantity: 1 }],
     total_price: 1099,
     payment_type: "COD",
+    assigned_provider: "Delhivery",
     shipping_address: {
       name: "Diya Iyer",
       address1: "21, East Main Road",
@@ -184,6 +191,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
     line_items: [{ title: "Boldfit Resistance Bands", sku: "FIT-BANDS-SET", quantity: 1 }],
     total_price: 799,
     payment_type: "Prepaid",
+    assigned_provider: "Shipmozo",
     shipping_address: {
       name: "Arjun Patel",
       address1: "405, Riverfront Enclave",
@@ -207,6 +215,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
     line_items: [{ title: "Spigen Case Duo Pack", sku: "MOB-SPIGEN-2PK", quantity: 1 }],
     total_price: 1199,
     payment_type: "COD",
+    assigned_provider: "Delhivery",
     shipping_address: {
       name: "Myra Sen",
       address1: "Tower 2, Palm Residency",
@@ -230,6 +239,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
     line_items: [{ title: "Safari Travel Pouch", sku: "TRAVEL-SAFARI-POUCH", quantity: 3 }],
     total_price: 1497,
     payment_type: "Prepaid",
+    assigned_provider: "Shipmozo",
     shipping_address: {
       name: "Yash Gupta",
       address1: "79, Civil Lines",
@@ -238,7 +248,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
       zip: "302006",
       country: "India"
     },
-    fulfillment_status: "undelivered",
+    fulfillment_status: "inTransit",
     package_details: {
       weight_kg: 0.95,
       dimensions_cm: { length: 34, width: 24, height: 13 }
@@ -252,6 +262,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
     line_items: [{ title: "Borossil Coffee Mug Gift Box", sku: "HOME-MUG-GIFT", quantity: 1 }],
     total_price: 999,
     payment_type: "COD",
+    assigned_provider: "Delhivery",
     shipping_address: {
       name: "Anaya Roy",
       address1: "Flat 7C, Skyline Apartments",
@@ -261,7 +272,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
       zip: "560027",
       country: "India"
     },
-    fulfillment_status: "pickupScheduled",
+    fulfillment_status: "pickupsAndManifests",
     package_details: {
       weight_kg: 1.1,
       dimensions_cm: { length: 27, width: 21, height: 15 }
