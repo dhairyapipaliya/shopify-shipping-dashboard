@@ -1,4 +1,5 @@
-import { dashboardShipmentStatusKeys, getOrderStatusLabel, type OperationalOrderStatus } from "./orderStatuses.js";
+import { sharedDummyOrders } from "../data/sharedOrders.js";
+import { dashboardShipmentStatusKeys, getOrderStatusBadgeClass, getOrderStatusLabel, type OperationalOrderStatus } from "./orderStatuses.js";
 
 export type ProviderShipmentSnapshot = {
   provider: string;
@@ -25,7 +26,8 @@ export type DashboardRecentOrder = {
   customerName: string;
   shipmentLabel: string;
   orderType: "Prepaid" | "COD";
-  status: "Pending" | "Pickup Scheduled" | "In Transit" | "Delivered";
+  status: string;
+  statusBadgeClass: string;
   date: string;
 };
 
@@ -66,56 +68,57 @@ const providerSnapshots: ProviderShipmentSnapshot[] = [
   {
     provider: "Shipmozo",
     statuses: {
-      pickupScheduled: 42,
-      inTransit: 116,
-      delivered: 804,
-      undelivered: 22,
-      outForDelivery: 37,
-      rtoInTransit: 12,
-      rtoDelivered: 6,
-      ndr: 2
+      pickupScheduled: 4,
+      inTransit: 2,
+      delivered: 1,
+      undelivered: 1,
+      outForDelivery: 1,
+      rtoInTransit: 1,
+      rtoDelivered: 0,
+      ndr: 0
     }
   },
   {
     provider: "Delhivery",
     statuses: {
-      pickupScheduled: 31,
-      inTransit: 98,
-      delivered: 702,
-      undelivered: 18,
-      outForDelivery: 29,
-      rtoInTransit: 11,
-      rtoDelivered: 8,
+      pickupScheduled: 1,
+      inTransit: 0,
+      delivered: 0,
+      undelivered: 0,
+      outForDelivery: 0,
+      rtoInTransit: 0,
+      rtoDelivered: 1,
       ndr: 1
     }
   }
 ];
 
-const recentOrders: DashboardRecentOrder[] = [
-  { orderId: "#100451", customerName: "Aarav Mehta", shipmentLabel: "Wireless Keyboard", orderType: "Prepaid", status: "Pickup Scheduled", date: "Apr 17, 2026" },
-  { orderId: "#100450", customerName: "Riya Sharma", shipmentLabel: "Skincare Combo", orderType: "COD", status: "In Transit", date: "Apr 17, 2026" },
-  { orderId: "#100449", customerName: "Kabir Khan", shipmentLabel: "Sports Bottle Pack", orderType: "Prepaid", status: "Pending", date: "Apr 17, 2026" },
-  { orderId: "#100448", customerName: "Neha Verma", shipmentLabel: "Noise Cancelling Earbuds", orderType: "COD", status: "Delivered", date: "Apr 16, 2026" },
-  { orderId: "#100447", customerName: "Ishaan Das", shipmentLabel: "Cotton T-Shirt Set", orderType: "Prepaid", status: "Pickup Scheduled", date: "Apr 16, 2026" },
-  { orderId: "#100446", customerName: "Diya Iyer", shipmentLabel: "Kitchen Organizer", orderType: "COD", status: "In Transit", date: "Apr 16, 2026" },
-  { orderId: "#100445", customerName: "Arjun Patel", shipmentLabel: "Fitness Resistance Bands", orderType: "Prepaid", status: "Delivered", date: "Apr 15, 2026" },
-  { orderId: "#100444", customerName: "Myra Sen", shipmentLabel: "Phone Case Duo", orderType: "COD", status: "Pickup Scheduled", date: "Apr 15, 2026" },
-  { orderId: "#100443", customerName: "Yash Gupta", shipmentLabel: "Travel Pouch", orderType: "Prepaid", status: "Pending", date: "Apr 15, 2026" },
-  { orderId: "#100442", customerName: "Anaya Roy", shipmentLabel: "Coffee Mug Gift Box", orderType: "COD", status: "In Transit", date: "Apr 14, 2026" }
-];
+const formatDate = (isoDate: string) =>
+  new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(isoDate));
+
+const recentOrders: DashboardRecentOrder[] = sharedDummyOrders.map((order) => ({
+  orderId: order.order_number,
+  customerName: order.shipping_address.name,
+  shipmentLabel: order.line_items.map((item) => item.title).join(", "),
+  orderType: order.payment_type,
+  status: getOrderStatusLabel(order.fulfillment_status),
+  statusBadgeClass: getOrderStatusBadgeClass(order.fulfillment_status),
+  date: formatDate(order.created_at)
+}));
 
 export const getDashboardViewModel = (): DashboardViewModel => {
   const totals = aggregateShipmentStatuses(providerSnapshots);
   const totalTrackedShipments = Object.values(totals).reduce((sum, value) => sum + value, 0);
+  const unbookedCount = sharedDummyOrders.filter((order) => order.fulfillment_status === "unbooked").length;
 
   return {
     generatedAt: "Updated 5 mins ago",
     dateRangeLabel: "Last 30 days",
     kpis: [
-      { key: "totalShipments", label: "Total Shipments", value: "2,146", change: "+12.4% vs last month", href: "/shipments" },
-      { key: "todayShipment", label: "Today Shipment", value: "87", change: "+8 since yesterday", href: "/orders?status=pickupScheduled" },
-      { key: "avgShipmentCost", label: "Avg Shipment Cost", value: "₹86.40", change: "-₹3.20 optimization", href: "/quotes" },
-      { key: "unshippedOrders", label: "Unshipped Orders", value: "39", change: "Needs attention", href: "/orders?status=unbooked" }
+      { key: "totalShipments", label: "Total Shipments", value: String(sharedDummyOrders.length), change: "Shared mock set", href: "/orders?status=all" },
+      { key: "todayShipment", label: "Today Shipment", value: "2", change: "Dummy Shopify orders", href: "/orders?status=pickupScheduled" },
+      { key: "avgShipmentCost", label: "Avg Shipment Cost", value: "₹86.40", change: "Mock benchmark", href: "/quotes" },
+      { key: "unshippedOrders", label: "Unshipped Orders", value: String(unbookedCount), change: "Needs attention", href: "/orders?status=unbooked" }
     ],
     shipmentStatuses: dashboardShipmentStatusKeys.map((status) => ({
       key: status,
