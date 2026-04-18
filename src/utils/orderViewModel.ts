@@ -1,4 +1,4 @@
-import type { Order, PaymentMode, Shipment } from "@prisma/client";
+import type { Order, Shipment } from "@prisma/client";
 import type { SharedShopifyOrder } from "../data/sharedOrders.js";
 import {
   deriveOrderOperationalStatus,
@@ -77,15 +77,15 @@ export const mapMockOrderToRow = (order: SharedShopifyOrder): OrdersPageRow => {
 };
 
 export const mapDbOrderToRow = (order: Order & { shipments: Shipment[] }): OrdersPageRow => {
-  const latestShipment = order.shipments[0] ?? null;
+  const latestShipment = order.shipments?.[0] ?? null;
   const status = deriveOrderOperationalStatus(latestShipment);
-  const { dateLabel, timeLabel } = formatDateTime(order.createdAt);
-  const paymentType = order.paymentMode === PaymentMode.COD ? "COD" : "Prepaid";
+  const { dateLabel, timeLabel } = formatDateTime(order.createdAt ?? new Date());
+  const paymentType = String(order.paymentMode ?? "").toUpperCase() === "COD" ? "COD" : "Prepaid";
 
   return {
     id: order.id,
     source: "db",
-    orderDateTime: order.createdAt.toISOString(),
+    orderDateTime: order.createdAt?.toISOString?.() ?? new Date(0).toISOString(),
     orderDateLabel: dateLabel,
     orderTimeLabel: timeLabel,
     orderNumber: order.orderNumber,
@@ -99,7 +99,7 @@ export const mapDbOrderToRow = (order: Order & { shipments: Shipment[] }): Order
     paymentAmount: order.orderValue,
     paymentType,
     shippingName: order.customerName,
-    shippingAddress: [order.addressLine1, order.addressLine2].filter(Boolean).join(", "),
+    shippingAddress: [order.addressLine1, order.addressLine2].filter(Boolean).join(", ") || "—",
     cityStatePincode: `${order.city}, ${order.state} - ${order.pincode}`,
     operationalStatus: status,
     operationalStatusLabel: getOrderStatusLabel(status),
