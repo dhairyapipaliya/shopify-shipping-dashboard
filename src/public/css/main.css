@@ -489,6 +489,58 @@ input:focus, select:focus {
   }
 }
 
+
+.orders-operations-table th,
+.orders-operations-table td {
+  vertical-align: top;
+}
+
+.orders-operations-table th {
+  white-space: nowrap;
+}
+
+.orders-operations-table td {
+  min-width: 140px;
+}
+
+.cell-stack {
+  display: grid;
+  gap: 4px;
+}
+
+.orders-status-pills {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  text-decoration: none;
+  color: #334155;
+  background: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.status-pill:hover {
+  border-color: #93c5fd;
+  color: #1e3a8a;
+  background: #eff6ff;
+}
+
+.status-pill.is-active {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  color: #1e40af;
+}
+
 .empty-state {
   border: 1px dashed #cbd5e1;
   border-radius: 12px;
