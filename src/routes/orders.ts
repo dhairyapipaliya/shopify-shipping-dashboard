@@ -4,7 +4,7 @@ import { requireAuth } from "../middleware/auth.js";
 import { rankQuotes } from "../services/quoteEngine.js";
 import { providerRegistry } from "../services/providers/providerRegistry.js";
 import { fetchShopifyOrders } from "../services/shopify/shopifyClient.js";
-import { matchesOrderStatusFilter, orderStatusFilters, parseOrderStatusFilter } from "../utils/orderStatuses.js";
+import { matchesOrderStatusFilter, orderStatusFilters, orderStatusWorkflowGroups, parseOrderStatusFilter } from "../utils/orderStatuses.js";
 import { sharedDummyOrders } from "../data/sharedOrders.js";
 import { mapDbOrderToRow, mapMockOrderToRow } from "../utils/orderViewModel.js";
 
@@ -46,7 +46,8 @@ ordersRouter.get("/orders", requireAuth, async (req, res) => {
   res.render("orders", {
     orders: filteredOrders,
     selectedStatus,
-    statusOptions: orderStatusFilters
+    statusOptions: orderStatusFilters,
+    statusGroups: orderStatusWorkflowGroups
   });
 });
 

@@ -6,18 +6,23 @@ import {
 } from "../src/utils/orderStatuses.js";
 
 describe("orderStatuses", () => {
-  it("derives unbooked status when shipment does not exist", () => {
-    expect(deriveOrderOperationalStatus(null)).toBe("unbooked");
+  it("derives new status when shipment does not exist", () => {
+    expect(deriveOrderOperationalStatus(null)).toBe("new");
   });
 
   it("normalizes known shipment statuses", () => {
-    expect(deriveOrderOperationalStatus({ status: "IN_TRANSIT" })).toBe("inTransit");
+    expect(deriveOrderOperationalStatus({ status: "COURIER_ASSIGNED" })).toBe("courierAssigned");
     expect(deriveOrderOperationalStatus({ status: "RTO_DELIVERED" })).toBe("rtoDelivered");
   });
 
+  it("supports legacy and current filter values", () => {
+    expect(parseOrderStatusFilter("pickupScheduled")).toBe("pickupsAndManifests");
+    expect(parseOrderStatusFilter("new")).toBe("new");
+  });
+
   it("matches direct status filters", () => {
-    expect(matchesOrderStatusFilter("pickupScheduled", "pickupScheduled")).toBe(true);
-    expect(matchesOrderStatusFilter("inTransit", "pickupScheduled")).toBe(false);
+    expect(matchesOrderStatusFilter("pickupsAndManifests", "pickupsAndManifests")).toBe(true);
+    expect(matchesOrderStatusFilter("inTransit", "pickupsAndManifests")).toBe(false);
   });
 
   it("parses invalid filter values safely", () => {

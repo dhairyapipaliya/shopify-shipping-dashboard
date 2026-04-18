@@ -68,10 +68,11 @@ const providerSnapshots: ProviderShipmentSnapshot[] = [
   {
     provider: "Shipmozo",
     statuses: {
-      pickupScheduled: 4,
+      new: 1,
+      courierAssigned: 2,
+      pickupsAndManifests: 2,
       inTransit: 2,
       delivered: 1,
-      undelivered: 1,
       outForDelivery: 1,
       rtoInTransit: 1,
       rtoDelivered: 0,
@@ -81,10 +82,11 @@ const providerSnapshots: ProviderShipmentSnapshot[] = [
   {
     provider: "Delhivery",
     statuses: {
-      pickupScheduled: 1,
+      new: 0,
+      courierAssigned: 0,
+      pickupsAndManifests: 1,
       inTransit: 0,
       delivered: 0,
-      undelivered: 0,
       outForDelivery: 0,
       rtoInTransit: 0,
       rtoDelivered: 1,
@@ -109,16 +111,16 @@ const recentOrders: DashboardRecentOrder[] = sharedDummyOrders.map((order) => ({
 export const getDashboardViewModel = (): DashboardViewModel => {
   const totals = aggregateShipmentStatuses(providerSnapshots);
   const totalTrackedShipments = Object.values(totals).reduce((sum, value) => sum + value, 0);
-  const unbookedCount = sharedDummyOrders.filter((order) => order.fulfillment_status === "unbooked").length;
+  const unbookedCount = sharedDummyOrders.filter((order) => order.fulfillment_status === "new").length;
 
   return {
     generatedAt: "Updated 5 mins ago",
     dateRangeLabel: "Last 30 days",
     kpis: [
       { key: "totalShipments", label: "Total Shipments", value: String(sharedDummyOrders.length), change: "Shared mock set", href: "/orders?status=all" },
-      { key: "todayShipment", label: "Today Shipment", value: "2", change: "Dummy Shopify orders", href: "/orders?status=pickupScheduled" },
+      { key: "todayShipment", label: "Today Shipment", value: "2", change: "Dummy Shopify orders", href: "/orders?status=pickupsAndManifests" },
       { key: "avgShipmentCost", label: "Avg Shipment Cost", value: "₹86.40", change: "Mock benchmark", href: "/quotes" },
-      { key: "unshippedOrders", label: "Unshipped Orders", value: String(unbookedCount), change: "Needs attention", href: "/orders?status=unbooked" }
+      { key: "unshippedOrders", label: "Unshipped Orders", value: String(unbookedCount), change: "Needs attention", href: "/orders?status=new" }
     ],
     shipmentStatuses: dashboardShipmentStatusKeys.map((status) => ({
       key: status,

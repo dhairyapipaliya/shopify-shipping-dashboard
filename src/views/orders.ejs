@@ -25,30 +25,26 @@
       <main class="container">
         <section class="card">
           <div class="orders-toolbar">
-            <form method="get" action="/orders" class="orders-filter-form">
-              <label for="status" class="small">Filter by Status</label>
-              <div class="orders-filter-controls">
-                <div class="custom-select" data-custom-select>
-                  <select id="status" name="status" onchange="this.form.submit()">
-                    <% statusOptions.forEach((option) => { %>
-                      <option value="<%= option.value %>" <%= selectedStatus === option.value ? 'selected' : '' %>><%= option.label %></option>
+            <div class="orders-workflow" aria-label="Operational workflow status filters">
+              <% statusGroups.forEach((group) => { %>
+                <section class="workflow-group" aria-label="<%= group.title %>">
+                  <p class="workflow-group-title"><%= group.title %></p>
+                  <div class="workflow-segmented" role="tablist" aria-label="<%= group.title %> statuses">
+                    <% group.statuses.forEach((statusValue) => {
+                      const option = statusOptions.find((statusOption) => statusOption.value === statusValue);
+                      if (!option) return;
+                    %>
+                      <a
+                        href="/orders?status=<%= option.value %>"
+                        class="workflow-tab <%= selectedStatus === option.value ? 'is-active' : '' %>"
+                        role="tab"
+                        aria-selected="<%= selectedStatus === option.value ? 'true' : 'false' %>"
+                      ><%= option.label %></a>
                     <% }) %>
-                  </select>
-                  <button
-                    class="custom-select-trigger"
-                    type="button"
-                    aria-haspopup="listbox"
-                    aria-expanded="false"
-                    aria-controls="status-options"
-                  >
-                    <span class="custom-select-value">All</span>
-                    <span class="custom-select-arrow" aria-hidden="true"></span>
-                  </button>
-                  <ul class="custom-select-dropdown" id="status-options" role="listbox" hidden></ul>
-                </div>
-                <noscript><button class="btn btn-sm" type="submit">Apply</button></noscript>
-              </div>
-            </form>
+                  </div>
+                </section>
+              <% }) %>
+            </div>
           </div>
 
           <% if (!orders.length) { %>
@@ -133,20 +129,10 @@
               </tbody>
             </table>
           </div>
-
-          <div class="orders-status-pills" aria-label="Quick status filters">
-            <% statusOptions.forEach((option) => { %>
-              <a
-                href="/orders?status=<%= option.value %>"
-                class="status-pill <%= selectedStatus === option.value ? 'is-active' : '' %>"
-              ><%= option.label %></a>
-            <% }) %>
-          </div>
           <% } %>
         </section>
       </main>
     </div>
   </div>
-  <script src="/public/js/customSelect.js"></script>
 </body>
 </html>
