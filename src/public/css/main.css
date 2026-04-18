@@ -465,6 +465,87 @@ input:focus, select:focus {
 }
 .error { color: #b91c1c; margin: 10px 0; font-weight: 600; }
 
+.dispatch-layout {
+  gap: 16px;
+}
+
+.dispatch-summary-card {
+  display: grid;
+  gap: 12px;
+}
+
+.dispatch-summary-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dispatch-selection-banner {
+  border-color: #93c5fd;
+  background: linear-gradient(180deg, #eff6ff 0%, #ffffff 60%);
+  display: grid;
+  gap: 4px;
+}
+
+.dispatch-rates-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dispatch-rate-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  display: grid;
+  gap: 14px;
+  background: #ffffff;
+  transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+
+.dispatch-rate-card:hover {
+  border-color: #bfdbfe;
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.08);
+  transform: translateY(-1px);
+}
+
+.dispatch-rate-card.is-selected {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  background: linear-gradient(180deg, #eff6ff 0%, #ffffff 42%);
+}
+
+.dispatch-rate-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.dispatch-rate-head h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.dispatch-rate-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.dispatch-rate-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.dispatch-rate-value {
+  margin-top: 3px;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
 .auth-body { background: radial-gradient(circle at top, #e2e8f0 0%, #f3f5f9 40%); }
 .auth-shell { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
 .auth-card {
@@ -496,6 +577,10 @@ input:focus, select:focus {
   .container { padding: 20px; }
   .orders-workflow {
     grid-template-columns: repeat(2, minmax(220px, 1fr));
+  }
+  .dispatch-rates-grid,
+  .dispatch-summary-grid {
+    grid-template-columns: 1fr;
   }
 }
 @media (max-width: 640px) {

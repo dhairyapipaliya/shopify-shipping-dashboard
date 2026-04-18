@@ -84,21 +84,20 @@ const buildProviderSnapshotsFromSharedOrders = (): ProviderShipmentSnapshot[] =>
 const formatDate = (isoDate: string) =>
   new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(isoDate));
 
-const recentOrders: DashboardRecentOrder[] = sharedDummyOrders.map((order) => ({
-  orderId: order.order_number,
-  customerName: order.shipping_address.name,
-  shipmentLabel: order.line_items.map((item) => item.title).join(", "),
-  orderType: order.payment_type,
-  status: getOrderStatusLabel(order.fulfillment_status),
-  statusBadgeClass: getOrderStatusBadgeClass(order.fulfillment_status),
-  date: formatDate(order.created_at)
-}));
-
 export const getDashboardViewModel = (): DashboardViewModel => {
   const providerSnapshots = buildProviderSnapshotsFromSharedOrders();
   const totals = aggregateShipmentStatuses(providerSnapshots);
   const totalTrackedShipments = Object.values(totals).reduce((sum, value) => sum + value, 0);
   const unbookedCount = sharedDummyOrders.filter((order) => order.fulfillment_status === "new").length;
+  const recentOrders: DashboardRecentOrder[] = sharedDummyOrders.map((order) => ({
+    orderId: order.order_number,
+    customerName: order.shipping_address.name,
+    shipmentLabel: order.line_items.map((item) => item.title).join(", "),
+    orderType: order.payment_type,
+    status: getOrderStatusLabel(order.fulfillment_status),
+    statusBadgeClass: getOrderStatusBadgeClass(order.fulfillment_status),
+    date: formatDate(order.created_at)
+  }));
 
   return {
     generatedAt: "Updated 5 mins ago",
