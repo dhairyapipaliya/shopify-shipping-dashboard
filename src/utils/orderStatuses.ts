@@ -1,6 +1,5 @@
 export const orderStatusFilters = [
   { value: "new", label: "New" },
-  { value: "courierAssigned", label: "Courier Assigned" },
   { value: "pickupsAndManifests", label: "Pickups & Manifests" },
   { value: "inTransit", label: "In Transit" },
   { value: "outForDelivery", label: "Out for Delivery" },
@@ -18,7 +17,7 @@ export type OperationalOrderStatus = Exclude<OrderStatusFilter, "all">;
 export const orderStatusWorkflowGroups = [
   {
     title: "Shipment Booking",
-    statuses: ["new", "courierAssigned", "pickupsAndManifests"]
+    statuses: ["new", "pickupsAndManifests"]
   },
   {
     title: "Shipment Journey",
@@ -36,7 +35,6 @@ export const orderStatusWorkflowGroups = [
 
 export const dashboardShipmentStatusKeys = [
   "new",
-  "courierAssigned",
   "pickupsAndManifests",
   "inTransit",
   "outForDelivery",
@@ -57,8 +55,8 @@ const legacyFilterMap: Partial<Record<string, OrderStatusFilter>> = {
 const shipmentStatusMap: Record<string, OperationalOrderStatus> = {
   UNBOOKED: "new",
   NEW: "new",
-  ASSIGNED: "courierAssigned",
-  COURIER_ASSIGNED: "courierAssigned",
+  ASSIGNED: "pickupsAndManifests",
+  COURIER_ASSIGNED: "pickupsAndManifests",
   DRAFT: "pickupsAndManifests",
   BOOKED: "pickupsAndManifests",
   PICKUP_SCHEDULED: "pickupsAndManifests",
@@ -108,7 +106,6 @@ export const getOrderStatusBadgeClass = (status: OperationalOrderStatus): string
     case "inTransit":
     case "outForDelivery":
     case "pickupsAndManifests":
-    case "courierAssigned":
       return "badge-blue";
     case "new":
     case "archive":

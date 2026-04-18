@@ -99,7 +99,7 @@
                   </div>
                 </div>
 
-                <% if (order.fulfillment_status === 'new') { %>
+                <% if (order.workflow_status === 'new') { %>
                   <form method="post" action="/dispatch/<%= encodeURIComponent(order.order_id) %>/select">
                     <input type="hidden" name="rateId" value="<%= rate.option_id %>" />
                     <button class="btn btn-block" type="submit"><%= selectedRateId === rate.option_id ? 'Selected' : 'Select Courier' %></button>

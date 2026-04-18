@@ -24,6 +24,11 @@
 
       <main class="container">
         <section class="card">
+          <% if (updatedOrder) { %>
+            <div class="dispatch-selection-banner">
+              <p><strong>Dispatch updated:</strong> Order moved to <strong>Pickups &amp; Manifests</strong>. Label and manifest actions are now available.</p>
+            </div>
+          <% } %>
           <div class="orders-toolbar">
             <div class="orders-workflow" aria-label="Operational workflow status filters">
               <% statusGroups.forEach((group) => { %>
@@ -63,6 +68,7 @@
                   <th>Package Details</th>
                   <th>Payment</th>
                   <th>Shipping Details</th>
+                  <th>Courier Selection</th>
                   <th>Status</th>
                   <th>Action</th>
                 </tr>
@@ -109,6 +115,12 @@
                   </div>
                 </td>
                 <td>
+                  <div class="cell-stack">
+                    <strong><%= order.selectedCourierSummary %></strong>
+                    <span class="muted small"><%= order.selectedCourierMeta %></span>
+                  </div>
+                </td>
+                <td>
                   <span class="badge <%= order.operationalStatusBadgeClass %>"><%= order.operationalStatusLabel %></span>
                 </td>
                 <td>
@@ -116,6 +128,15 @@
                     <div class="row-stack">
                       <span class="badge <%= order.operationalStatusBadgeClass %>"><%= order.operationalStatusLabel %></span>
                       <span class="muted small">Shipment <%= order.latestShipment.status %></span>
+                    </div>
+                  <% } else if (order.operationalStatus === 'pickupsAndManifests') { %>
+                    <div class="row-stack">
+                      <form method="post" action="/orders/<%= encodeURIComponent(order.id) %>/print-label">
+                        <button class="btn btn-sm btn-soft" type="submit">Print Label</button>
+                      </form>
+                      <form method="post" action="/orders/<%= encodeURIComponent(order.id) %>/manifest">
+                        <button class="btn btn-sm btn-soft" type="submit">Manifest</button>
+                      </form>
                     </div>
                   <% } else if (order.operationalStatus !== 'new') { %>
                     <span class="muted small">No action</span>

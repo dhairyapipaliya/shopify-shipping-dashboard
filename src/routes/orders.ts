@@ -5,7 +5,7 @@ import { rankQuotes } from "../services/quoteEngine.js";
 import { providerRegistry } from "../services/providers/providerRegistry.js";
 import { fetchShopifyOrders } from "../services/shopify/shopifyClient.js";
 import { matchesOrderStatusFilter, orderStatusFilters, orderStatusWorkflowGroups, parseOrderStatusFilter } from "../utils/orderStatuses.js";
-import { sharedDummyOrders } from "../data/sharedOrders.js";
+import { getSharedOrderById, sharedDummyOrders } from "../data/sharedOrders.js";
 import { mapMockOrderToRow } from "../utils/orderViewModel.js";
 
 export const ordersRouter = Router();
@@ -26,12 +26,14 @@ ordersRouter.post("/orders/sync", requireAuth, async (_req, res) => {
 
 ordersRouter.get("/orders", requireAuth, async (req, res) => {
   const selectedStatus = parseOrderStatusFilter(req.query.status);
+  const updatedOrder = typeof req.query.updatedOrder === "string" ? req.query.updatedOrder : "";
 
   const orderRows = sharedDummyOrders.map((order) => mapMockOrderToRow(order));
   const filteredOrders = orderRows.filter((order) => matchesOrderStatusFilter(order.operationalStatus, selectedStatus));
 
   res.render("orders", {
     orders: filteredOrders,
+    updatedOrder,
     selectedStatus,
     statusOptions: orderStatusFilters,
     statusGroups: orderStatusWorkflowGroups
@@ -93,4 +95,24 @@ ordersRouter.get("/orders/:id/quotes", requireAuth, async (req, res) => {
   }
 
   res.render("quotes", { order, ranked: ranked.ranked, cheapest: ranked.cheapest, savingsAmount: ranked.savingsAmount });
+});
+
+ordersRouter.post("/orders/:id/print-label", requireAuth, (req, res) => {
+  const order = getSharedOrderById(req.params.id);
+  if (!order) {
+    res.status(404).send("Order not found");
+    return;
+  }
+
+  res.redirect(`/orders?status=pickupsAndManifests&updatedOrder=${encodeURIComponent(order.order_id)}`);
+});
+
+ordersRouter.post("/orders/:id/manifest", requireAuth, (req, res) => {
+  const order = getSharedOrderById(req.params.id);
+  if (!order) {
+    res.status(404).send("Order not found");
+    return;
+  }
+
+  res.redirect(`/orders?status=pickupsAndManifests&updatedOrder=${encodeURIComponent(order.order_id)}`);
 });

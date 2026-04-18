@@ -29,6 +29,8 @@ export type OrdersPageRow = {
   operationalStatus: OperationalOrderStatus;
   operationalStatusLabel: string;
   operationalStatusBadgeClass: string;
+  selectedCourierSummary: string;
+  selectedCourierMeta: string;
   latestShipment?: Shipment | null;
 };
 
@@ -81,9 +83,15 @@ export const mapMockOrderToRow = (order: SharedShopifyOrder): OrdersPageRow => {
     shippingName: order.shipping_address?.name ?? "—",
     shippingAddress: [order.shipping_address?.address1, order.shipping_address?.address2].filter(Boolean).join(", ") || "—",
     cityStatePincode: `${order.shipping_address?.city ?? "—"}, ${order.shipping_address?.province ?? "—"} - ${order.shipping_address?.zip ?? "—"}`,
-    operationalStatus: order.fulfillment_status,
-    operationalStatusLabel: getOrderStatusLabel(order.fulfillment_status),
-    operationalStatusBadgeClass: getOrderStatusBadgeClass(order.fulfillment_status),
+    operationalStatus: order.workflow_status,
+    operationalStatusLabel: getOrderStatusLabel(order.workflow_status),
+    operationalStatusBadgeClass: getOrderStatusBadgeClass(order.workflow_status),
+    selectedCourierSummary: order.selected_courier
+      ? `${order.selected_courier.provider_name} · ${order.selected_courier.service_name}`
+      : "Not assigned",
+    selectedCourierMeta: order.selected_courier
+      ? `${order.selected_courier.service_type} · ${order.selected_courier.source_name}`
+      : "Select a courier from Dispatch",
     latestShipment: null
   };
 };
@@ -116,6 +124,8 @@ export const mapDbOrderToRow = (order: Order & { shipments: Shipment[] }): Order
     operationalStatus: status,
     operationalStatusLabel: getOrderStatusLabel(status),
     operationalStatusBadgeClass: getOrderStatusBadgeClass(status),
+    selectedCourierSummary: latestShipment ? `Shipment ${latestShipment.provider}` : "Not assigned",
+    selectedCourierMeta: latestShipment?.awbNumber ? `AWB: ${latestShipment.awbNumber}` : "Select a courier",
     latestShipment
   };
 };

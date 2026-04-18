@@ -36,7 +36,7 @@ dispatchRouter.post("/dispatch/:orderId/select", requireAuth, (req, res) => {
     return;
   }
 
-  if (order.fulfillment_status !== "new") {
+  if (order.workflow_status !== "new") {
     res.redirect(`/dispatch/${encodeURIComponent(order.order_id)}?error=status-locked`);
     return;
   }
@@ -50,7 +50,7 @@ dispatchRouter.post("/dispatch/:orderId/select", requireAuth, (req, res) => {
     return;
   }
 
-  updateSharedOrderCourierAssignment(order.order_id, selectedRate.provider_name);
+  updateSharedOrderCourierAssignment(order.order_id, selectedRate);
 
-  res.redirect(`/dispatch/${encodeURIComponent(order.order_id)}?selectedRate=${encodeURIComponent(selectedRate.option_id)}`);
+  res.redirect(`/orders?status=pickupsAndManifests&updatedOrder=${encodeURIComponent(order.order_id)}`);
 });

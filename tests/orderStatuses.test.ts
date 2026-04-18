@@ -11,7 +11,7 @@ describe("orderStatuses", () => {
   });
 
   it("normalizes known shipment statuses", () => {
-    expect(deriveOrderOperationalStatus({ status: "COURIER_ASSIGNED" })).toBe("courierAssigned");
+    expect(deriveOrderOperationalStatus({ status: "COURIER_ASSIGNED" })).toBe("pickupsAndManifests");
     expect(deriveOrderOperationalStatus({ status: "RTO_DELIVERED" })).toBe("rtoDelivered");
   });
 
