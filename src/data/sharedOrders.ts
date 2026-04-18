@@ -39,6 +39,15 @@ export type SharedShopifyOrder = {
   package_details: ShopifyReadyPackageDetails;
 };
 
+export type NewSharedOrderInput = Omit<SharedShopifyOrder, "fulfillment_status"> & {
+  fulfillment_status?: OperationalOrderStatus;
+};
+
+export const createSharedOrder = (order: NewSharedOrderInput): SharedShopifyOrder => ({
+  ...order,
+  fulfillment_status: order.fulfillment_status ?? "new"
+});
+
 export const sharedDummyOrders: SharedShopifyOrder[] = [
   {
     order_id: "gid://shopify/Order/6100001001",
@@ -282,12 +291,18 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
 
 export const getSharedOrderById = (orderId: string): SharedShopifyOrder | undefined => sharedDummyOrders.find((order) => order.order_id === orderId);
 
+export const addSharedOrder = (order: NewSharedOrderInput): SharedShopifyOrder => {
+  const normalizedOrder = createSharedOrder(order);
+  sharedDummyOrders.unshift(normalizedOrder);
+  return normalizedOrder;
+};
+
 export const updateSharedOrderCourierAssignment = (orderId: string, provider: SharedShopifyOrder["assigned_provider"]): SharedShopifyOrder | undefined => {
   const order = getSharedOrderById(orderId);
   if (!order) return undefined;
 
   order.assigned_provider = provider;
-  order.fulfillment_status = "courierAssigned";
+  order.fulfillment_status = "pickupsAndManifests";
 
   return order;
 };

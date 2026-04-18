@@ -15,13 +15,15 @@ dispatchRouter.get("/dispatch/:orderId", requireAuth, (req, res) => {
 
   const rates = getDispatchRateOptions(order);
   const selectedRateId = typeof req.query.selectedRate === "string" ? req.query.selectedRate : "";
-  const selectedRate = rates.find((rate) => rate.id === selectedRateId);
+  const selectedRate = rates.find((rate) => rate.option_id === selectedRateId);
+  const errorCode = typeof req.query.error === "string" ? req.query.error : "";
 
   res.render("dispatch", {
     order,
     rates,
     selectedRateId,
     selectedRate,
+    errorCode,
     selectedProvider: order.assigned_provider
   });
 });
@@ -34,16 +36,21 @@ dispatchRouter.post("/dispatch/:orderId/select", requireAuth, (req, res) => {
     return;
   }
 
+  if (order.fulfillment_status !== "new") {
+    res.redirect(`/dispatch/${encodeURIComponent(order.order_id)}?error=status-locked`);
+    return;
+  }
+
   const selectedRateId = typeof req.body.rateId === "string" ? req.body.rateId : "";
   const rates = getDispatchRateOptions(order);
-  const selectedRate = rates.find((rate) => rate.id === selectedRateId);
+  const selectedRate = rates.find((rate) => rate.option_id === selectedRateId);
 
   if (!selectedRate) {
     res.redirect(`/dispatch/${encodeURIComponent(order.order_id)}?error=invalid-rate`);
     return;
   }
 
-  updateSharedOrderCourierAssignment(order.order_id, selectedRate.providerName);
+  updateSharedOrderCourierAssignment(order.order_id, selectedRate.provider_name);
 
-  res.redirect(`/dispatch/${encodeURIComponent(order.order_id)}?selectedRate=${encodeURIComponent(selectedRate.id)}`);
+  res.redirect(`/dispatch/${encodeURIComponent(order.order_id)}?selectedRate=${encodeURIComponent(selectedRate.option_id)}`);
 });
