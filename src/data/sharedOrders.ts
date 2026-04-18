@@ -33,7 +33,7 @@ export type SharedShopifyOrder = {
   line_items: ShopifyReadyLineItem[];
   total_price: number;
   payment_type: "Prepaid" | "COD";
-  assigned_provider: "Shipmozo" | "Delhivery";
+  assigned_provider: "Shipmozo" | "Delhivery" | "Blue Dart" | "XpressBees" | "Ecom Express";
   shipping_address: ShopifyReadyAddress;
   fulfillment_status: OperationalOrderStatus;
   package_details: ShopifyReadyPackageDetails;
@@ -279,3 +279,15 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
     }
   }
 ];
+
+export const getSharedOrderById = (orderId: string): SharedShopifyOrder | undefined => sharedDummyOrders.find((order) => order.order_id === orderId);
+
+export const updateSharedOrderCourierAssignment = (orderId: string, provider: SharedShopifyOrder["assigned_provider"]): SharedShopifyOrder | undefined => {
+  const order = getSharedOrderById(orderId);
+  if (!order) return undefined;
+
+  order.assigned_provider = provider;
+  order.fulfillment_status = "courierAssigned";
+
+  return order;
+};

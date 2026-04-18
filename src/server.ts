@@ -9,6 +9,7 @@ import { env } from "./config/env.js";
 import { adminToolsRouter } from "./routes/adminTools.js";
 import { authRouter } from "./routes/auth.js";
 import { dashboardRouter } from "./routes/dashboard.js";
+import { dispatchRouter } from "./routes/dispatch.js";
 import { ordersRouter } from "./routes/orders.js";
 import { shipmentRouter } from "./routes/shipments.js";
 import { webhookRouter } from "./routes/webhooks.js";
@@ -49,6 +50,7 @@ app.use((_req, res, next) => {
 app.use(authRouter);
 app.use(dashboardRouter);
 app.use(ordersRouter);
+app.use(dispatchRouter);
 app.use(shipmentRouter);
 app.use(adminToolsRouter);
 app.use(webhookRouter);

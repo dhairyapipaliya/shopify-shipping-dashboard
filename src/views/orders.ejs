@@ -120,8 +120,7 @@
                   <% } else if (order.source === 'db') { %>
                     <a class="link" href="/orders/<%= order.id %>/quotes">Assign Courier</a>
                   <% } else { %>
-                    <button class="btn btn-sm" type="button" disabled>Assign Courier</button>
-                    <p class="muted small">Demo order</p>
+                    <a class="link" href="/dispatch/<%= encodeURIComponent(order.id) %>">Assign Courier</a>
                   <% } %>
                 </td>
               </tr>
