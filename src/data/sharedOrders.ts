@@ -56,7 +56,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
       zip: "201309",
       country: "India"
     },
-    fulfillment_status: "unbooked",
+    fulfillment_status: "new",
     package_details: {
       weight_kg: 0.45,
       dimensions_cm: { length: 21, width: 15, height: 6 }
@@ -79,7 +79,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
       zip: "400076",
       country: "India"
     },
-    fulfillment_status: "pickupScheduled",
+    fulfillment_status: "courierAssigned",
     package_details: {
       weight_kg: 0.7,
       dimensions_cm: { length: 24, width: 18, height: 10 }
@@ -238,7 +238,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
       zip: "302006",
       country: "India"
     },
-    fulfillment_status: "undelivered",
+    fulfillment_status: "ndr",
     package_details: {
       weight_kg: 0.95,
       dimensions_cm: { length: 34, width: 24, height: 13 }
@@ -261,7 +261,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
       zip: "560027",
       country: "India"
     },
-    fulfillment_status: "pickupScheduled",
+    fulfillment_status: "pickupsAndManifests",
     package_details: {
       weight_kg: 1.1,
       dimensions_cm: { length: 27, width: 21, height: 15 }
