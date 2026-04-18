@@ -64,36 +64,22 @@ export const aggregateShipmentStatuses = (snapshots: ProviderShipmentSnapshot[])
   return totals;
 };
 
-const providerSnapshots: ProviderShipmentSnapshot[] = [
-  {
-    provider: "Shipmozo",
-    statuses: {
-      new: 1,
-      courierAssigned: 2,
-      pickupsAndManifests: 2,
-      inTransit: 2,
-      delivered: 1,
-      outForDelivery: 1,
-      rtoInTransit: 1,
-      rtoDelivered: 0,
-      ndr: 0
+const buildProviderSnapshotsFromSharedOrders = (): ProviderShipmentSnapshot[] => {
+  const grouped = new Map<string, Partial<Record<OperationalOrderStatus, number>>>();
+
+  for (const order of sharedDummyOrders) {
+    if (!grouped.has(order.assigned_provider)) {
+      grouped.set(order.assigned_provider, {});
     }
-  },
-  {
-    provider: "Delhivery",
-    statuses: {
-      new: 0,
-      courierAssigned: 0,
-      pickupsAndManifests: 1,
-      inTransit: 0,
-      delivered: 0,
-      outForDelivery: 0,
-      rtoInTransit: 0,
-      rtoDelivered: 1,
-      ndr: 1
-    }
+
+    const providerStatuses = grouped.get(order.assigned_provider);
+    if (!providerStatuses) continue;
+
+    providerStatuses[order.fulfillment_status] = (providerStatuses[order.fulfillment_status] ?? 0) + 1;
   }
-];
+
+  return Array.from(grouped.entries()).map(([provider, statuses]) => ({ provider, statuses }));
+};
 
 const formatDate = (isoDate: string) =>
   new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(isoDate));
@@ -109,6 +95,7 @@ const recentOrders: DashboardRecentOrder[] = sharedDummyOrders.map((order) => ({
 }));
 
 export const getDashboardViewModel = (): DashboardViewModel => {
+  const providerSnapshots = buildProviderSnapshotsFromSharedOrders();
   const totals = aggregateShipmentStatuses(providerSnapshots);
   const totalTrackedShipments = Object.values(totals).reduce((sum, value) => sum + value, 0);
   const unbookedCount = sharedDummyOrders.filter((order) => order.fulfillment_status === "new").length;
@@ -118,7 +105,7 @@ export const getDashboardViewModel = (): DashboardViewModel => {
     dateRangeLabel: "Last 30 days",
     kpis: [
       { key: "totalShipments", label: "Total Shipments", value: String(sharedDummyOrders.length), change: "Shared mock set", href: "/orders?status=all" },
-      { key: "todayShipment", label: "Today Shipment", value: "2", change: "Dummy Shopify orders", href: "/orders?status=pickupsAndManifests" },
+      { key: "todayShipment", label: "Today Shipment", value: String(totals.pickupsAndManifests), change: "Dummy Shopify orders", href: "/orders?status=pickupsAndManifests" },
       { key: "avgShipmentCost", label: "Avg Shipment Cost", value: "₹86.40", change: "Mock benchmark", href: "/quotes" },
       { key: "unshippedOrders", label: "Unshipped Orders", value: String(unbookedCount), change: "Needs attention", href: "/orders?status=new" }
     ],
