@@ -75,7 +75,7 @@ const buildProviderSnapshotsFromSharedOrders = (): ProviderShipmentSnapshot[] =>
     const providerStatuses = grouped.get(order.assigned_provider);
     if (!providerStatuses) continue;
 
-    providerStatuses[order.fulfillment_status] = (providerStatuses[order.fulfillment_status] ?? 0) + 1;
+    providerStatuses[order.workflow_status] = (providerStatuses[order.workflow_status] ?? 0) + 1;
   }
 
   return Array.from(grouped.entries()).map(([provider, statuses]) => ({ provider, statuses }));
@@ -88,14 +88,14 @@ export const getDashboardViewModel = (): DashboardViewModel => {
   const providerSnapshots = buildProviderSnapshotsFromSharedOrders();
   const totals = aggregateShipmentStatuses(providerSnapshots);
   const totalTrackedShipments = Object.values(totals).reduce((sum, value) => sum + value, 0);
-  const unbookedCount = sharedDummyOrders.filter((order) => order.fulfillment_status === "new").length;
+  const unbookedCount = sharedDummyOrders.filter((order) => order.workflow_status === "new").length;
   const recentOrders: DashboardRecentOrder[] = sharedDummyOrders.map((order) => ({
     orderId: order.order_number,
     customerName: order.shipping_address.name,
     shipmentLabel: order.line_items.map((item) => item.title).join(", "),
     orderType: order.payment_type,
-    status: getOrderStatusLabel(order.fulfillment_status),
-    statusBadgeClass: getOrderStatusBadgeClass(order.fulfillment_status),
+    status: getOrderStatusLabel(order.workflow_status),
+    statusBadgeClass: getOrderStatusBadgeClass(order.workflow_status),
     date: formatDate(order.created_at)
   }));
 

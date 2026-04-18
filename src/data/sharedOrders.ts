@@ -1,4 +1,5 @@
 import type { OperationalOrderStatus } from "../utils/orderStatuses.js";
+import type { DispatchRateOption } from "../services/dispatchRates.js";
 
 export type ShopifyReadyLineItem = {
   title: string;
@@ -33,11 +34,34 @@ export type SharedShopifyOrder = {
   line_items: ShopifyReadyLineItem[];
   total_price: number;
   payment_type: "Prepaid" | "COD";
-  assigned_provider: "Shipmozo" | "Delhivery" | "Blue Dart" | "XpressBees" | "Ecom Express";
+  assigned_provider: "Unassigned" | "Shipmozo" | "Delhivery" | "Blue Dart" | "XpressBees" | "Ecom Express";
   shipping_address: ShopifyReadyAddress;
-  fulfillment_status: OperationalOrderStatus;
+  workflow_status: OperationalOrderStatus;
+  selected_courier?: {
+    option_id: string;
+    provider_name: string;
+    source_name: string;
+    service_name: string;
+    service_type: string;
+    price: number;
+    eta_days: number;
+    selected_at: string;
+    label_reference?: string;
+    label_url?: string;
+    manifest_reference?: string;
+  };
   package_details: ShopifyReadyPackageDetails;
 };
+
+export type NewSharedOrderInput = Omit<SharedShopifyOrder, "workflow_status"> & {
+  workflow_status?: OperationalOrderStatus;
+};
+
+export const createSharedOrder = (order: NewSharedOrderInput): SharedShopifyOrder => ({
+  ...order,
+  assigned_provider: order.assigned_provider ?? "Unassigned",
+  workflow_status: order.workflow_status ?? "new"
+});
 
 export const sharedDummyOrders: SharedShopifyOrder[] = [
   {
@@ -48,7 +72,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
     line_items: [{ title: "Boat Airdopes 141", sku: "AUDIO-BOAT-141", quantity: 1 }],
     total_price: 1499,
     payment_type: "Prepaid",
-    assigned_provider: "Shipmozo",
+    assigned_provider: "Unassigned",
     shipping_address: {
       name: "Aarav Mehta",
       address1: "Flat 804, Magnolia Residency",
@@ -58,7 +82,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
       zip: "201309",
       country: "India"
     },
-    fulfillment_status: "new",
+    workflow_status: "new",
     package_details: {
       weight_kg: 0.45,
       dimensions_cm: { length: 21, width: 15, height: 6 }
@@ -72,7 +96,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
     line_items: [{ title: "Mamaearth Skincare Combo", sku: "BEAUTY-MAMA-SET", quantity: 1 }],
     total_price: 899,
     payment_type: "COD",
-    assigned_provider: "Delhivery",
+    assigned_provider: "Unassigned",
     shipping_address: {
       name: "Riya Sharma",
       address1: "B-1203, Shree Heights",
@@ -82,7 +106,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
       zip: "400076",
       country: "India"
     },
-    fulfillment_status: "courierAssigned",
+    workflow_status: "new",
     package_details: {
       weight_kg: 0.7,
       dimensions_cm: { length: 24, width: 18, height: 10 }
@@ -106,7 +130,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
       zip: "500034",
       country: "India"
     },
-    fulfillment_status: "archive",
+    workflow_status: "archive",
     package_details: {
       weight_kg: 1.2,
       dimensions_cm: { length: 30, width: 22, height: 14 }
@@ -120,7 +144,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
     line_items: [{ title: "Noise Buds VS104", sku: "AUDIO-NOISE-104", quantity: 1 }],
     total_price: 1699,
     payment_type: "COD",
-    assigned_provider: "Delhivery",
+    assigned_provider: "Unassigned",
     shipping_address: {
       name: "Neha Verma",
       address1: "Plot 22, Shivaji Nagar",
@@ -129,7 +153,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
       zip: "411005",
       country: "India"
     },
-    fulfillment_status: "outForDelivery",
+    workflow_status: "new",
     package_details: {
       weight_kg: 0.5,
       dimensions_cm: { length: 20, width: 14, height: 7 }
@@ -153,7 +177,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
       zip: "700091",
       country: "India"
     },
-    fulfillment_status: "delivered",
+    workflow_status: "delivered",
     package_details: {
       weight_kg: 0.9,
       dimensions_cm: { length: 32, width: 26, height: 8 }
@@ -177,7 +201,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
       zip: "600040",
       country: "India"
     },
-    fulfillment_status: "ndr",
+    workflow_status: "ndr",
     package_details: {
       weight_kg: 1.6,
       dimensions_cm: { length: 36, width: 25, height: 18 }
@@ -201,7 +225,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
       zip: "380009",
       country: "India"
     },
-    fulfillment_status: "rtoInTransit",
+    workflow_status: "rtoInTransit",
     package_details: {
       weight_kg: 0.8,
       dimensions_cm: { length: 28, width: 20, height: 9 }
@@ -225,7 +249,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
       zip: "110075",
       country: "India"
     },
-    fulfillment_status: "rtoDelivered",
+    workflow_status: "rtoDelivered",
     package_details: {
       weight_kg: 0.35,
       dimensions_cm: { length: 18, width: 11, height: 4 }
@@ -239,7 +263,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
     line_items: [{ title: "Safari Travel Pouch", sku: "TRAVEL-SAFARI-POUCH", quantity: 3 }],
     total_price: 1497,
     payment_type: "Prepaid",
-    assigned_provider: "Shipmozo",
+    assigned_provider: "Unassigned",
     shipping_address: {
       name: "Yash Gupta",
       address1: "79, Civil Lines",
@@ -248,7 +272,7 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
       zip: "302006",
       country: "India"
     },
-    fulfillment_status: "inTransit",
+    workflow_status: "new",
     package_details: {
       weight_kg: 0.95,
       dimensions_cm: { length: 34, width: 24, height: 13 }
@@ -272,7 +296,19 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
       zip: "560027",
       country: "India"
     },
-    fulfillment_status: "pickupsAndManifests",
+    workflow_status: "pickupsAndManifests",
+    selected_courier: {
+      option_id: "gid://shopify/Order/6100001010-shipmozo_delhivery_surface-1",
+      provider_name: "Shipmozo",
+      source_name: "shipmozo",
+      service_name: "Delhivery",
+      service_type: "Surface",
+      price: 228,
+      eta_days: 4,
+      selected_at: "2026-04-14T18:00:00+05:30",
+      label_reference: "LBL-NFM1010-SHPMZ-DELH-001",
+      manifest_reference: "MNF-NFM1010-0414"
+    },
     package_details: {
       weight_kg: 1.1,
       dimensions_cm: { length: 27, width: 21, height: 15 }
@@ -282,12 +318,30 @@ export const sharedDummyOrders: SharedShopifyOrder[] = [
 
 export const getSharedOrderById = (orderId: string): SharedShopifyOrder | undefined => sharedDummyOrders.find((order) => order.order_id === orderId);
 
-export const updateSharedOrderCourierAssignment = (orderId: string, provider: SharedShopifyOrder["assigned_provider"]): SharedShopifyOrder | undefined => {
+export const addSharedOrder = (order: NewSharedOrderInput): SharedShopifyOrder => {
+  const normalizedOrder = createSharedOrder(order);
+  sharedDummyOrders.unshift(normalizedOrder);
+  return normalizedOrder;
+};
+
+export const updateSharedOrderCourierAssignment = (orderId: string, selectedRate: DispatchRateOption): SharedShopifyOrder | undefined => {
   const order = getSharedOrderById(orderId);
   if (!order) return undefined;
 
-  order.assigned_provider = provider;
-  order.fulfillment_status = "courierAssigned";
+  order.assigned_provider = selectedRate.provider_name;
+  order.workflow_status = "pickupsAndManifests";
+  order.selected_courier = {
+    option_id: selectedRate.option_id,
+    provider_name: selectedRate.provider_name,
+    source_name: selectedRate.source_name,
+    service_name: selectedRate.service_name,
+    service_type: selectedRate.service_type,
+    price: selectedRate.price,
+    eta_days: selectedRate.eta_days,
+    selected_at: new Date().toISOString(),
+    label_reference: `LBL-${order.order_number}-${selectedRate.source_name}-${selectedRate.service_name}`.toUpperCase().replace(/\s+/g, "-"),
+    manifest_reference: `MNF-${order.order_number}-${new Date().toISOString().slice(0, 10)}`
+  };
 
   return order;
 };

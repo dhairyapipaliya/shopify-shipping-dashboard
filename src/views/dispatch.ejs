@@ -48,47 +48,65 @@
 
         <% if (selectedRate) { %>
           <section class="card dispatch-selection-banner">
-            <p><strong>Courier assigned:</strong> <%= selectedRate.providerName %> · <%= selectedRate.serviceType %> · ₹<%= selectedRate.priceInr %> · ETA <%= selectedRate.etaDays %> days.</p>
-            <p class="muted small">Order status updated to <strong>Courier Assigned</strong>. This now appears on Orders and Dashboard views.</p>
+            <p><strong>Courier assigned:</strong> <%= selectedRate.provider_name %> via <%= selectedRate.source_name %> · <%= selectedRate.service_name %> (<%= selectedRate.service_type %>) · ₹<%= selectedRate.price %> · ETA <%= selectedRate.eta_days %> days.</p>
+            <p class="muted small">Order status updated to <strong>Pickups &amp; Manifests</strong>. This now appears on Orders and Dashboard views.</p>
+          </section>
+        <% } %>
+        <% if (errorCode === 'status-locked') { %>
+          <section class="card">
+            <p class="error">This order has already progressed beyond New. Re-assignment is currently disabled in this workflow.</p>
           </section>
         <% } %>
 
         <section class="card">
           <div class="section-header">
             <h2>Courier Rate Options</h2>
-            <p class="muted small">Unified list designed for future API aggregation.</p>
+            <p class="muted small">Column comparison ready for direct and aggregator API rate feeds.</p>
           </div>
 
-          <div class="dispatch-rates-grid">
+          <div class="dispatch-rate-comparison">
             <% rates.forEach((rate) => { %>
-              <article class="dispatch-rate-card <%= selectedRateId === rate.id ? 'is-selected' : '' %>">
-                <div class="dispatch-rate-head">
+              <article class="dispatch-rate-column <%= selectedRateId === rate.option_id ? 'is-selected' : '' %>">
+                <div class="dispatch-rate-column-head">
                   <div>
-                    <h3><%= rate.providerName %></h3>
-                    <p class="muted small"><%= rate.serviceType %> · Source: <%= rate.source %></p>
+                    <p class="muted small">Provider</p>
+                    <h3><%= rate.provider_name %></h3>
+                    <p class="muted small">Source: <strong><%= rate.source_name %></strong></p>
                   </div>
-                  <div class="dispatch-rate-tags">
+                  <div class="dispatch-rate-column-tags">
                     <% rate.tags.forEach((tag) => { %>
                       <span class="badge <%= tag === 'cheapest' ? 'badge-green' : tag === 'fastest' ? 'badge-blue' : 'badge-slate' %>"><%= tag.charAt(0).toUpperCase() + tag.slice(1) %></span>
                     <% }) %>
                   </div>
                 </div>
 
-                <div class="dispatch-rate-metrics">
+                <div class="dispatch-rate-column-metrics">
                   <div>
-                    <p class="muted small">Price</p>
-                    <p class="dispatch-rate-value">₹<%= rate.priceInr %></p>
+                    <p class="muted small">Service</p>
+                    <p class="dispatch-rate-value"><%= rate.service_name %></p>
                   </div>
                   <div>
-                    <p class="muted small">Estimated Delivery</p>
-                    <p class="dispatch-rate-value"><%= rate.etaDays %> days</p>
+                    <p class="muted small">Service Type</p>
+                    <p class="dispatch-rate-value"><%= rate.service_type %></p>
+                  </div>
+                  <div>
+                    <p class="muted small">Rate</p>
+                    <p class="dispatch-rate-value">₹<%= rate.price %></p>
+                  </div>
+                  <div>
+                    <p class="muted small">ETA</p>
+                    <p class="dispatch-rate-value"><%= rate.eta_days %> days</p>
                   </div>
                 </div>
 
-                <form method="post" action="/dispatch/<%= encodeURIComponent(order.order_id) %>/select">
-                  <input type="hidden" name="rateId" value="<%= rate.id %>" />
-                  <button class="btn btn-block" type="submit"><%= selectedRateId === rate.id ? 'Selected' : 'Select Courier' %></button>
-                </form>
+                <% if (order.workflow_status === 'new') { %>
+                  <form method="post" action="/dispatch/<%= encodeURIComponent(order.order_id) %>/select">
+                    <input type="hidden" name="rateId" value="<%= rate.option_id %>" />
+                    <button class="btn btn-block" type="submit"><%= selectedRateId === rate.option_id ? 'Selected' : 'Select Courier' %></button>
+                  </form>
+                <% } else { %>
+                  <p class="muted small">Courier selection is locked because this order is no longer in the <strong>New</strong> stage.</p>
+                <% } %>
               </article>
             <% }) %>
           </div>

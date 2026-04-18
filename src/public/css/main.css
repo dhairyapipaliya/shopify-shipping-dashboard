@@ -487,54 +487,58 @@ input:focus, select:focus {
   gap: 4px;
 }
 
-.dispatch-rates-grid {
+.dispatch-rate-comparison {
   display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(230px, 1fr);
   gap: 12px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  overflow-x: auto;
+  padding-bottom: 6px;
 }
 
-.dispatch-rate-card {
+.dispatch-rate-column {
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 14px;
   display: grid;
   gap: 14px;
+  align-content: start;
   background: #ffffff;
   transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
 }
 
-.dispatch-rate-card:hover {
+.dispatch-rate-column:hover {
   border-color: #bfdbfe;
   box-shadow: 0 6px 20px rgba(37, 99, 235, 0.08);
   transform: translateY(-1px);
 }
 
-.dispatch-rate-card.is-selected {
+.dispatch-rate-column.is-selected {
   border-color: #60a5fa;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
   background: linear-gradient(180deg, #eff6ff 0%, #ffffff 42%);
 }
 
-.dispatch-rate-head {
+.dispatch-rate-column-head {
   display: flex;
   justify-content: space-between;
   gap: 12px;
   align-items: flex-start;
 }
 
-.dispatch-rate-head h3 {
+.dispatch-rate-column-head h3 {
   margin: 0;
   font-size: 1.05rem;
 }
 
-.dispatch-rate-tags {
+.dispatch-rate-column-tags {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 6px;
 }
 
-.dispatch-rate-metrics {
+.dispatch-rate-column-metrics {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
@@ -578,9 +582,12 @@ input:focus, select:focus {
   .orders-workflow {
     grid-template-columns: repeat(2, minmax(220px, 1fr));
   }
-  .dispatch-rates-grid,
   .dispatch-summary-grid {
     grid-template-columns: 1fr;
+  }
+  .dispatch-rate-comparison {
+    grid-auto-flow: row;
+    grid-auto-columns: 1fr;
   }
 }
 @media (max-width: 640px) {
