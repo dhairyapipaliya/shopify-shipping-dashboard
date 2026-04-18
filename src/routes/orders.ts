@@ -4,8 +4,17 @@ import { requireAuth } from "../middleware/auth.js";
 import { rankQuotes } from "../services/quoteEngine.js";
 import { providerRegistry } from "../services/providers/providerRegistry.js";
 import { fetchShopifyOrders } from "../services/shopify/shopifyClient.js";
+import {
+  archiveSharedOrder,
+  cloneSharedOrder,
+  deleteSharedOrder,
+  getSharedOrderById,
+  sharedDummyOrders,
+  updateSharedOrderPackageDetails,
+  updateSharedOrderPickupAddress
+} from "../data/sharedOrders.js";
+import { PACKAGE_MODE, type PackageBox, type PackageMode } from "../utils/packageMode.js";
 import { matchesOrderStatusFilter, orderStatusFilters, orderStatusWorkflowGroups, parseOrderStatusFilter } from "../utils/orderStatuses.js";
-import { getSharedOrderById, sharedDummyOrders } from "../data/sharedOrders.js";
 import { mapMockOrderToRow } from "../utils/orderViewModel.js";
 
 export const ordersRouter = Router();
@@ -31,12 +40,22 @@ ordersRouter.get("/orders", requireAuth, async (req, res) => {
   const orderRows = sharedDummyOrders.map((order) => mapMockOrderToRow(order));
   const filteredOrders = orderRows.filter((order) => matchesOrderStatusFilter(order.operationalStatus, selectedStatus));
 
+  const statusCounts = orderStatusFilters.reduce<Record<string, number>>((acc, filter) => {
+    if (filter.value === "all") {
+      acc[filter.value] = orderRows.length;
+    } else {
+      acc[filter.value] = orderRows.filter((order) => order.operationalStatus === filter.value).length;
+    }
+    return acc;
+  }, {});
+
   res.render("orders", {
     orders: filteredOrders,
     updatedOrder,
     selectedStatus,
     statusOptions: orderStatusFilters,
-    statusGroups: orderStatusWorkflowGroups
+    statusGroups: orderStatusWorkflowGroups,
+    statusCounts
   });
 });
 
@@ -104,7 +123,7 @@ ordersRouter.post("/orders/:id/print-label", requireAuth, (req, res) => {
     return;
   }
 
-  res.redirect(`/orders?status=pickupsAndManifests&updatedOrder=${encodeURIComponent(order.order_id)}`);
+  res.redirect(`/orders?status=${encodeURIComponent(order.workflow_status)}&updatedOrder=${encodeURIComponent(order.order_id)}`);
 });
 
 ordersRouter.post("/orders/:id/manifest", requireAuth, (req, res) => {
@@ -114,5 +133,90 @@ ordersRouter.post("/orders/:id/manifest", requireAuth, (req, res) => {
     return;
   }
 
-  res.redirect(`/orders?status=pickupsAndManifests&updatedOrder=${encodeURIComponent(order.order_id)}`);
+  res.redirect(`/orders?status=${encodeURIComponent(order.workflow_status)}&updatedOrder=${encodeURIComponent(order.order_id)}`);
+});
+
+ordersRouter.post("/orders/:id/package", requireAuth, (req, res) => {
+  const order = getSharedOrderById(req.params.id);
+  if (!order) {
+    res.status(404).send("Order not found");
+    return;
+  }
+
+  if (order.workflow_status !== "new") {
+    res.redirect(`/orders?status=${encodeURIComponent(order.workflow_status)}`);
+    return;
+  }
+
+  const rawMode = typeof req.body.packageMode === "string" ? req.body.packageMode : PACKAGE_MODE.SINGLE_PACKAGE_B2C;
+  const packageMode: PackageMode = rawMode === PACKAGE_MODE.MULTI_PACKAGE_B2B ? PACKAGE_MODE.MULTI_PACKAGE_B2B : PACKAGE_MODE.SINGLE_PACKAGE_B2C;
+
+  const lengths = Array.isArray(req.body.boxLengthCm) ? req.body.boxLengthCm : [req.body.boxLengthCm];
+  const widths = Array.isArray(req.body.boxWidthCm) ? req.body.boxWidthCm : [req.body.boxWidthCm];
+  const heights = Array.isArray(req.body.boxHeightCm) ? req.body.boxHeightCm : [req.body.boxHeightCm];
+  const weights = Array.isArray(req.body.boxWeightKg) ? req.body.boxWeightKg : [req.body.boxWeightKg];
+
+  const boxes: PackageBox[] = lengths
+    .map((_, index) => {
+      const length_cm = Number(lengths[index]);
+      const width_cm = Number(widths[index]);
+      const height_cm = Number(heights[index]);
+      const weight_kg = Number(weights[index]);
+      if (!length_cm || !width_cm || !height_cm || !weight_kg) {
+        return null;
+      }
+      return {
+        id: `box-${index + 1}`,
+        length_cm,
+        width_cm,
+        height_cm,
+        weight_kg
+      };
+    })
+    .filter((box): box is PackageBox => box !== null);
+
+  const totalWeight = Number(req.body.totalWeightKg) || boxes.reduce((sum, box) => sum + box.weight_kg, 0);
+
+  updateSharedOrderPackageDetails(order.order_id, {
+    package_mode: packageMode,
+    boxes,
+    total_weight_kg: totalWeight
+  });
+
+  res.redirect(`/orders?status=new&updatedOrder=${encodeURIComponent(order.order_id)}`);
+});
+
+ordersRouter.post("/orders/:id/actions", requireAuth, (req, res) => {
+  const order = getSharedOrderById(req.params.id);
+  if (!order) {
+    res.status(404).send("Order not found");
+    return;
+  }
+
+  const action = typeof req.body.action === "string" ? req.body.action : "";
+
+  switch (action) {
+    case "archive":
+      archiveSharedOrder(order.order_id);
+      res.redirect(`/orders?status=archive&updatedOrder=${encodeURIComponent(order.order_id)}`);
+      return;
+    case "clone": {
+      const clone = cloneSharedOrder(order.order_id);
+      res.redirect(`/orders?status=new&updatedOrder=${encodeURIComponent(clone?.order_id ?? order.order_id)}`);
+      return;
+    }
+    case "delete":
+      deleteSharedOrder(order.order_id);
+      res.redirect("/orders?status=all");
+      return;
+    case "changePickupAddress":
+      updateSharedOrderPickupAddress(order.order_id);
+      res.redirect(`/orders?status=new&updatedOrder=${encodeURIComponent(order.order_id)}`);
+      return;
+    case "editOrder":
+      res.redirect(`/orders?status=new&updatedOrder=${encodeURIComponent(order.order_id)}`);
+      return;
+    default:
+      res.redirect(`/orders?status=${encodeURIComponent(order.workflow_status)}`);
+  }
 });
