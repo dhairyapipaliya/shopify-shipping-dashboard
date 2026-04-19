@@ -670,19 +670,26 @@ input:focus, select:focus {
 }
 
 .orders-content-shell {
-  min-height: 440px;
+  min-height: 520px;
   border: 1px solid var(--border);
   border-radius: 12px;
   overflow: hidden;
   background: #fff;
 }
 
+.orders-content-body {
+  min-height: 520px;
+  display: flex;
+}
+
 .orders-content-shell .table-wrap {
+  flex: 1;
   height: 100%;
 }
 
 .orders-content-shell .orders-operations-table {
   border: 0;
+  height: 100%;
 }
 
 .empty-state {
@@ -705,10 +712,12 @@ input:focus, select:focus {
 }
 
 .orders-empty-state {
-  min-height: 360px;
+  min-height: 100%;
   display: grid;
+  place-items: center;
   border: 0;
   border-radius: 0;
+  padding: 24px;
 }
 
 .dispatch-empty-state {
