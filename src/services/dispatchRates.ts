@@ -42,12 +42,43 @@ const hashOrderId = (orderId: string): number => {
   return Math.abs(hash);
 };
 
-export const getDispatchRateOptions = (order: SharedShopifyOrder): DispatchRateOption[] => {
-  const hash = hashOrderId(order.order_id);
-  const weightPremium = Math.round(order.package_details.weight_kg * 32);
-  const dimensionPremium = Math.round((order.package_details.dimensions_cm.length + order.package_details.dimensions_cm.width + order.package_details.dimensions_cm.height) * 0.72);
+const safeNumber = (value: unknown): number => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
 
-  const options = mockRateTemplates.map((template, index) => {
+const getOrderPackageMetrics = (order: SharedShopifyOrder) => {
+  const packageRows = Array.isArray(order.package_details?.boxes) ? order.package_details.boxes : [];
+  const totalWeightKg = packageRows.reduce((sum, row) => {
+    const quantity = Math.max(1, Math.round(safeNumber(row?.no_of_boxes) || 1));
+    return sum + quantity * Math.max(0, safeNumber(row?.per_box_weight_kg));
+  }, 0);
+
+  const maxDimensionSum = packageRows.reduce((max, row) => {
+    const dimensionSum = safeNumber(row?.length_cm) + safeNumber(row?.width_cm) + safeNumber(row?.height_cm);
+    return Math.max(max, dimensionSum);
+  }, 0);
+
+  return {
+    totalWeightKg,
+    maxDimensionSum,
+    packageRows
+  };
+};
+
+export const getDispatchRateOptions = (order: SharedShopifyOrder): DispatchRateOption[] => {
+  const templates = Array.isArray(mockRateTemplates) ? mockRateTemplates : [];
+  if (!templates.length || !order?.order_id) {
+    return [];
+  }
+
+  const hash = hashOrderId(order.order_id);
+  const { totalWeightKg, maxDimensionSum } = getOrderPackageMetrics(order);
+  const effectiveWeight = Math.max(totalWeightKg, safeNumber(order.package_details?.total_weight_kg));
+  const weightPremium = Math.round(effectiveWeight * 32);
+  const dimensionPremium = Math.round(maxDimensionSum * 0.72);
+
+  const options = templates.map((template, index) => {
     const basePrice = 110 + ((hash + index * 37) % 360);
     const price = clamp(basePrice + weightPremium + dimensionPremium, 120, 980);
 
@@ -63,6 +94,10 @@ export const getDispatchRateOptions = (order: SharedShopifyOrder): DispatchRateO
       tags: []
     };
   });
+
+  if (!options.length) {
+    return [];
+  }
 
   const cheapestPrice = Math.min(...options.map((option) => option.price));
   const fastestEta = Math.min(...options.map((option) => option.eta_days));
