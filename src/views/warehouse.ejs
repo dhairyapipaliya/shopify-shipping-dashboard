@@ -30,7 +30,9 @@
             <table>
               <thead>
                 <tr>
-                  <th>Warehouse Name</th>
+                  <th>Warehouse</th>
+                  <th>Contact Person</th>
+                  <th>Phone</th>
                   <th>Address</th>
                   <th>Pincode</th>
                   <th>Actions</th>
@@ -40,9 +42,18 @@
                 <% warehouses.forEach((warehouse) => { %>
                   <tr>
                     <td><strong><%= warehouse.name %></strong></td>
+                    <td><%= warehouse.contact_person_name %></td>
+                    <td><%= warehouse.phone %></td>
                     <td><%= warehouse.address %></td>
                     <td><%= warehouse.pincode %></td>
-                    <td><a class="btn btn-sm btn-soft-link" href="/warehouse?edit=<%= warehouse.id %>">Edit</a></td>
+                    <td>
+                      <div class="warehouse-row-actions">
+                        <a class="btn btn-sm btn-soft-link" href="/warehouse?edit=<%= warehouse.id %>">Edit</a>
+                        <form method="post" action="/warehouse/<%= warehouse.id %>/delete" onsubmit="return confirm('Delete this warehouse?');">
+                          <button class="btn btn-sm warehouse-delete-btn" type="submit">Delete</button>
+                        </form>
+                      </div>
+                    </td>
                   </tr>
                 <% }) %>
               </tbody>
@@ -57,6 +68,8 @@
           <form method="post" action="/warehouse" class="warehouse-form-grid">
             <input type="hidden" name="id" value="<%= editWarehouse?.id ?? '' %>" />
             <label>Warehouse Name<input name="name" required value="<%= editWarehouse?.name ?? '' %>" /></label>
+            <label>Contact Person Name<input name="contact_person_name" required value="<%= editWarehouse?.contact_person_name ?? '' %>" /></label>
+            <label>Phone Number<input name="phone" required value="<%= editWarehouse?.phone ?? '' %>" /></label>
             <label>Address<input name="address" required value="<%= editWarehouse?.address ?? '' %>" /></label>
             <label>Pincode<input name="pincode" required value="<%= editWarehouse?.pincode ?? '' %>" /></label>
             <div class="warehouse-form-actions">

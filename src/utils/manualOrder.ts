@@ -79,7 +79,7 @@ export type ManualOrderDraft = {
   transporter_id: string;
   secondary_document: UploadedDoc | null;
   shipping_mode: string;
-  save_mode: "draft" | "create" | "create_and_assign" | null;
+  save_mode: "save" | "create" | "create_and_assign" | null;
   selected_courier: string;
   selected_service: string;
   validation_state: {
@@ -243,6 +243,16 @@ export const createDefaultManualOrder = (): ManualOrderDraft => ({
     errors: {}
   }
 });
+
+export const calculateManualOrderGrandTotal = (lineItems: ManualOrderLineItem[]): number => Number(
+  lineItems
+    .reduce((sum, item) => sum + (Number(item.quantity || 0) * Number(item.unit_price || 0)), 0)
+    .toFixed(2)
+);
+
+export const shouldShowEwayBill = (grandTotal: number, visibleFields: string[]): boolean => (
+  grandTotal > MANUAL_ORDER_RULES.ewayBillAutoThreshold || visibleFields.includes("eway_bill_number")
+);
 
 export const getProviderFieldRules = (provider: ManualOrderProvider, shipmentType: ShipmentType): ProviderFieldRules => {
   const capability = providerCapabilities[provider] ?? providerCapabilities[MANUAL_ORDER_PROVIDERS.FUTURE_AGGREGATOR];

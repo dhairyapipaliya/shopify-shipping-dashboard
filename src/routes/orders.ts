@@ -18,6 +18,7 @@ import { matchesOrderStatusFilter, orderStatusFilters, orderStatusWorkflowGroups
 import { mapMockOrderToRow } from "../utils/orderViewModel.js";
 import { MANUAL_ORDER_PROVIDERS, MANUAL_ORDER_RULES, createDefaultManualOrder, providerCapabilities } from "../utils/manualOrder.js";
 import { listWarehouses } from "../data/warehouses.js";
+import { listMockPincodeDirectory } from "../utils/pincodeLookup.js";
 
 export const ordersRouter = Router();
 
@@ -76,6 +77,7 @@ ordersRouter.get("/orders/new", requireAuth, (req, res) => {
     pickupAddresses,
     providerCapabilities,
     manualOrderRules: MANUAL_ORDER_RULES,
+    pincodeDirectory: listMockPincodeDirectory(),
     providerConstants: MANUAL_ORDER_PROVIDERS
   });
 });

@@ -964,6 +964,36 @@ input:focus, select:focus {
   background: #eff6ff;
 }
 
+.docs-grid {
+  align-items: start;
+}
+
+.pickup-card strong {
+  display: inline-block;
+  margin-bottom: 2px;
+}
+
+.warehouse-row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.warehouse-row-actions form {
+  margin: 0;
+}
+
+.warehouse-delete-btn {
+  background: #fff1f2;
+  color: #be123c;
+  border: 1px solid #fecdd3;
+}
+
+.warehouse-delete-btn:hover {
+  background: #ffe4e6;
+}
+
+
 .inline-actions {
   margin-top: 12px;
   display: flex;

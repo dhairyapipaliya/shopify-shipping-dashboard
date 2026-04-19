@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { requireAuth } from "../middleware/auth.js";
-import { createWarehouse, getWarehouseById, listWarehouses, updateWarehouse } from "../data/warehouses.js";
+import { createWarehouse, deleteWarehouse, getWarehouseById, listWarehouses, updateWarehouse } from "../data/warehouses.js";
 
 export const warehouseRouter = Router();
 
@@ -17,19 +17,26 @@ warehouseRouter.get("/warehouse", requireAuth, (req, res) => {
 warehouseRouter.post("/warehouse", requireAuth, (req, res) => {
   const id = typeof req.body.id === "string" ? req.body.id : "";
   const name = typeof req.body.name === "string" ? req.body.name.trim() : "";
+  const contact_person_name = typeof req.body.contact_person_name === "string" ? req.body.contact_person_name.trim() : "";
+  const phone = typeof req.body.phone === "string" ? req.body.phone.trim() : "";
   const address = typeof req.body.address === "string" ? req.body.address.trim() : "";
   const pincode = typeof req.body.pincode === "string" ? req.body.pincode.trim() : "";
 
-  if (!name || !address || !pincode) {
+  if (!name || !contact_person_name || !phone || !address || !pincode) {
     res.redirect(`/warehouse${id ? `?edit=${encodeURIComponent(id)}` : ""}`);
     return;
   }
 
   if (id) {
-    updateWarehouse(id, { name, address, pincode });
+    updateWarehouse(id, { name, contact_person_name, phone, address, pincode });
   } else {
-    createWarehouse({ name, address, pincode });
+    createWarehouse({ name, contact_person_name, phone, address, pincode });
   }
 
+  res.redirect("/warehouse");
+});
+
+warehouseRouter.post("/warehouse/:id/delete", requireAuth, (req, res) => {
+  deleteWarehouse(req.params.id);
   res.redirect("/warehouse");
 });
