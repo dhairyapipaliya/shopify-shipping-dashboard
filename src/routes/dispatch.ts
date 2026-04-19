@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { getSharedOrderById, updateSharedOrderCourierAssignment } from "../data/sharedOrders.js";
 import { requireAuth } from "../middleware/auth.js";
-import { getDispatchRateOptions } from "../services/dispatchRates.js";
+import { getDispatchRateOptions, getDispatchRateProviderGroups } from "../services/dispatchRates.js";
 
 export const dispatchRouter = Router();
 
@@ -13,13 +13,15 @@ dispatchRouter.get("/dispatch/:orderId", requireAuth, (req, res) => {
     return;
   }
 
-  const rates = getDispatchRateOptions(order);
+  const rateGroups = getDispatchRateProviderGroups(order);
+  const rates = rateGroups.flatMap((group) => group.options);
   const selectedRateId = typeof req.query.selectedRate === "string" ? req.query.selectedRate : "";
   const selectedRate = rates.find((rate) => rate.option_id === selectedRateId);
   const errorCode = typeof req.query.error === "string" ? req.query.error : "";
 
   res.render("dispatch", {
     order,
+    rateGroups,
     rates,
     selectedRateId,
     selectedRate,

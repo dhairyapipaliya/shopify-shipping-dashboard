@@ -66,7 +66,7 @@
             <p class="muted small">Column comparison ready for direct and aggregator API rate feeds.</p>
           </div>
 
-          <% if (!rates.length) { %>
+          <% if (!rateGroups.length) { %>
             <div class="empty-state dispatch-empty-state">
               <div class="empty-state-content">
                 <p><strong>Rates are unavailable right now.</strong></p>
@@ -75,48 +75,62 @@
             </div>
           <% } else { %>
           <div class="dispatch-rate-comparison">
-            <% rates.forEach((rate) => { %>
-              <article class="dispatch-rate-column <%= selectedRateId === rate.option_id ? 'is-selected' : '' %>">
+            <% rateGroups.forEach((group) => { %>
+              <article class="dispatch-provider-column dispatch-provider-<%= group.provider_group_type %>">
                 <div class="dispatch-rate-column-head">
                   <div>
-                    <p class="muted small">Provider</p>
-                    <h3><%= rate.provider_name %></h3>
-                    <p class="muted small">Source: <strong><%= rate.source_name %></strong></p>
-                  </div>
-                  <div class="dispatch-rate-column-tags">
-                    <% rate.tags.forEach((tag) => { %>
-                      <span class="badge <%= tag === 'cheapest' ? 'badge-green' : tag === 'fastest' ? 'badge-blue' : 'badge-slate' %>"><%= tag.charAt(0).toUpperCase() + tag.slice(1) %></span>
-                    <% }) %>
+                    <p class="muted small">Provider Group</p>
+                    <h3><%= group.provider_group_name %></h3>
+                    <p class="muted small">Type: <strong><%= group.provider_group_type === 'direct' ? 'Direct Provider' : 'Aggregator' %></strong></p>
                   </div>
                 </div>
 
-                <div class="dispatch-rate-column-metrics">
-                  <div>
-                    <p class="muted small">Service</p>
-                    <p class="dispatch-rate-value"><%= rate.service_name %></p>
-                  </div>
-                  <div>
-                    <p class="muted small">Service Type</p>
-                    <p class="dispatch-rate-value"><%= rate.service_type %></p>
-                  </div>
-                  <div>
-                    <p class="muted small">Rate</p>
-                    <p class="dispatch-rate-value">₹<%= rate.price %></p>
-                  </div>
-                  <div>
-                    <p class="muted small">ETA</p>
-                    <p class="dispatch-rate-value"><%= rate.eta_days %> days</p>
-                  </div>
-                </div>
+                <div class="dispatch-provider-options">
+                  <% group.options.forEach((rate) => { %>
+                    <div class="dispatch-rate-column <%= selectedRateId === rate.option_id ? 'is-selected' : '' %>">
+                      <div class="dispatch-rate-column-head">
+                        <div>
+                          <p class="muted small"><%= group.provider_group_type === 'aggregator' ? 'Partner Courier' : 'Provider' %></p>
+                          <h3><%= rate.partner_name || rate.provider_name %></h3>
+                          <p class="muted small">Source: <strong><%= rate.source_name %></strong></p>
+                        </div>
+                        <div class="dispatch-rate-column-tags">
+                          <% rate.tags.forEach((tag) => { %>
+                            <span class="badge <%= tag === 'cheapest' ? 'badge-green' : tag === 'fastest' ? 'badge-blue' : 'badge-slate' %>"><%= tag.charAt(0).toUpperCase() + tag.slice(1) %></span>
+                          <% }) %>
+                        </div>
+                      </div>
 
-                <% if (order.workflow_status === 'new') { %>
-                  <form method="post" action="/dispatch/<%= encodeURIComponent(order.order_id) %>/select">
-                    <input type="hidden" name="rateId" value="<%= rate.option_id %>" />
-                    <button class="btn btn-block" type="submit"><%= selectedRateId === rate.option_id ? 'Selected' : 'Select Courier' %></button>
-                  </form>
-                <% } else { %>
-                  <p class="muted small">Courier selection is locked because this order is no longer in the <strong>New</strong> stage.</p>
-                <% } %>
+                      <div class="dispatch-rate-column-metrics">
+                        <div>
+                          <p class="muted small">Service</p>
+                          <p class="dispatch-rate-value"><%= rate.service_name %></p>
+                        </div>
+                        <div>
+                          <p class="muted small">Service Type</p>
+                          <p class="dispatch-rate-value"><%= rate.service_type %></p>
+                        </div>
+                        <div>
+                          <p class="muted small">Rate</p>
+                          <p class="dispatch-rate-value">₹<%= rate.price %></p>
+                        </div>
+                        <div>
+                          <p class="muted small">ETA</p>
+                          <p class="dispatch-rate-value"><%= rate.eta_days %> days</p>
+                        </div>
+                      </div>
+
+                      <% if (order.workflow_status === 'new') { %>
+                        <form method="post" action="/dispatch/<%= encodeURIComponent(order.order_id) %>/select">
+                          <input type="hidden" name="rateId" value="<%= rate.option_id %>" />
+                          <button class="btn btn-block" type="submit"><%= selectedRateId === rate.option_id ? 'Selected' : 'Select Courier' %></button>
+                        </form>
+                      <% } else { %>
+                        <p class="muted small">Courier selection is locked because this order is no longer in the <strong>New</strong> stage.</p>
+                      <% } %>
+                    </div>
+                  <% }) %>
+                </div>
               </article>
             <% }) %>
           </div>
