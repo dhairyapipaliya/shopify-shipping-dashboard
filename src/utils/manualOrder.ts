@@ -13,7 +13,6 @@ export type PaymentMode = "PREPAID" | "COD";
 export type ManualOrderAddress = {
   contact_name: string;
   phone: string;
-  alternate_phone: string;
   email: string;
   gstin: string;
   address_line_1: string;
@@ -54,7 +53,7 @@ export type ManualOrderDraft = {
   order_source: "manual";
   provider_target: ManualOrderProvider;
   shipment_type: ShipmentType;
-  shipping_zone: "domestic" | "international";
+  shipping_zone: "domestic";
   order_id: string;
   reference_id: string;
   order_date: string;
@@ -71,7 +70,6 @@ export type ManualOrderDraft = {
   package_rows: ManualPackageRow[];
   total_weight: number;
   payment_mode: PaymentMode;
-  shipping_charges: number;
   invoice_number: string;
   invoice_amount: number;
   invoice_document: UploadedDoc | null;
@@ -81,7 +79,7 @@ export type ManualOrderDraft = {
   transporter_id: string;
   secondary_document: UploadedDoc | null;
   shipping_mode: string;
-  save_mode: "draft" | "create" | "create_and_assign" | null;
+  save_mode: "save" | "create" | "create_and_assign" | null;
   selected_courier: string;
   selected_service: string;
   validation_state: {
@@ -103,6 +101,11 @@ export type ProviderCapabilities = {
   supports_assign_later: boolean;
   supports_documents: boolean;
   field_rules: Record<ShipmentType, ProviderFieldRules>;
+};
+
+export const MANUAL_ORDER_RULES = {
+  defaultShippingZone: "domestic" as const,
+  ewayBillAutoThreshold: 50000
 };
 
 const baseVisibleFields = [
@@ -177,7 +180,6 @@ export const providerCapabilities: Record<ManualOrderProvider, ProviderCapabilit
 const defaultAddress = (): ManualOrderAddress => ({
   contact_name: "",
   phone: "",
-  alternate_phone: "",
   email: "",
   gstin: "",
   address_line_1: "",
@@ -224,7 +226,6 @@ export const createDefaultManualOrder = (): ManualOrderDraft => ({
   }],
   total_weight: 0.5,
   payment_mode: "PREPAID",
-  shipping_charges: 0,
   invoice_number: "",
   invoice_amount: 0,
   invoice_document: null,
@@ -242,6 +243,16 @@ export const createDefaultManualOrder = (): ManualOrderDraft => ({
     errors: {}
   }
 });
+
+export const calculateManualOrderGrandTotal = (lineItems: ManualOrderLineItem[]): number => Number(
+  lineItems
+    .reduce((sum, item) => sum + (Number(item.quantity || 0) * Number(item.unit_price || 0)), 0)
+    .toFixed(2)
+);
+
+export const shouldShowEwayBill = (grandTotal: number, visibleFields: string[]): boolean => (
+  grandTotal > MANUAL_ORDER_RULES.ewayBillAutoThreshold || visibleFields.includes("eway_bill_number")
+);
 
 export const getProviderFieldRules = (provider: ManualOrderProvider, shipmentType: ShipmentType): ProviderFieldRules => {
   const capability = providerCapabilities[provider] ?? providerCapabilities[MANUAL_ORDER_PROVIDERS.FUTURE_AGGREGATOR];

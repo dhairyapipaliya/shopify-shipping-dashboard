@@ -18,9 +18,8 @@
           <h1>Create Manual Order</h1>
         </div>
         <div class="topbar-btn-row">
-          <a class="btn btn-soft-link" href="/orders">Cancel</a>
-          <button class="btn btn-soft" type="button" data-save-mode="draft">Save Draft</button>
-          <button class="btn" type="button" data-save-mode="create">Create Order</button>
+          <a class="btn btn-soft-link" href="/orders">Dismiss</a>
+          <button class="btn btn-soft" type="button" data-save-mode="save">Save</button>
           <button class="btn" type="button" data-save-mode="create_and_assign">Save &amp; Assign Courier</button>
         </div>
       </header>
@@ -48,13 +47,6 @@
               Order Source
               <input value="Manual" disabled />
             </label>
-            <label>
-              Shipping Zone
-              <select data-field="shipping_zone" id="shippingZone">
-                <option value="domestic">Domestic</option>
-                <option value="international">International</option>
-              </select>
-            </label>
           </div>
         </section>
 
@@ -62,17 +54,16 @@
           <div class="section-header">
             <h3>A. Buyer / Receiver Details</h3>
           </div>
-          <div class="manual-grid-3">
+          <div class="manual-grid-3 buyer-grid">
             <label>Buyer / Receiver Name<input data-field="buyer_details.contact_name" /></label>
             <label>Phone<input data-field="buyer_details.phone" /></label>
-            <label>Alternate Phone<input data-field="buyer_details.alternate_phone" /></label>
             <label>Email<input data-field="buyer_details.email" /></label>
             <label>GSTIN<input data-field="buyer_details.gstin" /></label>
-            <label>Pincode<input data-field="buyer_details.pincode" /></label>
-            <label class="manual-grid-span-2">Address Line 1<input data-field="buyer_details.address_line_1" /></label>
-            <label class="manual-grid-span-2">Address Line 2<input data-field="buyer_details.address_line_2" /></label>
+            <label>Pincode<input data-field="buyer_details.pincode" maxlength="6" /></label>
             <label>City<input data-field="buyer_details.city" /></label>
             <label>State<input data-field="buyer_details.state" /></label>
+            <label class="manual-grid-span-2">Address Line 1<input data-field="buyer_details.address_line_1" /></label>
+            <label class="manual-grid-span-3">Address Line 2<input data-field="buyer_details.address_line_2" /></label>
           </div>
         </section>
 
@@ -80,7 +71,7 @@
           <div class="section-header">
             <h3>B. Order Details</h3>
           </div>
-          <div class="manual-grid-4">
+          <div class="manual-grid-4 order-meta-grid">
             <label>Order ID<input data-field="order_id" /></label>
             <label>Order Date<input data-field="order_date" type="date" /></label>
             <label>Reference ID<input data-field="reference_id" /></label>
@@ -96,28 +87,24 @@
             <button class="btn btn-sm btn-soft" type="button" id="addLineItemBtn">Add Item</button>
           </div>
           <div class="line-items-wrap" id="lineItemsWrap"></div>
-          <div class="manual-grid-3">
-            <label>Shipping Charges<input type="number" step="0.01" data-field="shipping_charges" /></label>
-            <label>Grand Total<input id="grandTotal" disabled /></label>
+          <div class="order-total-row">
+            <label class="grand-total-field">Grand Total<input id="grandTotal" disabled /></label>
           </div>
         </section>
 
         <section class="card">
           <div class="section-header">
             <h3>C. Warehouse / Pickup Address</h3>
+            <a class="btn btn-sm btn-soft-link" href="/warehouse">Manage Warehouses</a>
           </div>
           <div class="pickup-cards" id="pickupCards"></div>
-          <div class="inline-actions">
-            <button type="button" class="btn btn-sm btn-soft">Add New Pickup Address</button>
-            <button type="button" class="btn btn-sm btn-soft">Change Pickup Address</button>
-          </div>
         </section>
 
         <section class="card">
           <div class="section-header">
             <h3>D. Weight &amp; Dimensions</h3>
           </div>
-          <div class="manual-grid-3">
+          <div class="manual-grid-3 metrics-grid">
             <label>Package Type
               <select data-field="package_mode" id="packageMode">
                 <option value="SINGLE_PACKAGE_B2C">Single Package (B2C)</option>
@@ -144,7 +131,7 @@
           <div class="section-header">
             <h3>E. Other Details / Documents</h3>
           </div>
-          <div class="manual-grid-3" id="dynamicDocsSection"></div>
+          <div class="manual-grid-3 docs-grid" id="dynamicDocsSection"></div>
         </section>
 
         <section class="card validation-card" id="validationSummaryCard" hidden>
@@ -154,8 +141,7 @@
 
         <section class="manual-sticky-footer">
           <a class="btn btn-soft-link" href="/orders">Dismiss</a>
-          <button class="btn btn-soft" type="button" data-save-mode="draft">Save Draft</button>
-          <button class="btn" type="button" data-save-mode="create">Create Order</button>
+          <button class="btn btn-soft" type="button" data-save-mode="save">Save</button>
           <button class="btn" type="button" data-save-mode="create_and_assign">Save &amp; Assign Courier</button>
         </section>
       </main>
@@ -168,13 +154,16 @@
       const providerOptions = <%- JSON.stringify(providerOptions) %>;
       const pickupAddresses = <%- JSON.stringify(pickupAddresses) %>;
       const providerCapabilities = <%- JSON.stringify(providerCapabilities) %>;
+      const manualOrderRules = <%- JSON.stringify(manualOrderRules) %>;
+      const pincodeDirectory = <%- JSON.stringify(pincodeDirectory) %>;
       const PACKAGE_MODE = {
         SINGLE: 'SINGLE_PACKAGE_B2C',
         MULTI: 'MULTI_PACKAGE_B2B'
       };
 
       const state = {
-        draft: JSON.parse(localStorage.getItem('manual_order_draft') || 'null') || initialDraft
+        draft: JSON.parse(localStorage.getItem('manual_order_draft') || 'null') || initialDraft,
+        savedDrafts: JSON.parse(localStorage.getItem('manual_order_saved_records') || '[]')
       };
 
       const fieldErrorMap = {
@@ -189,7 +178,6 @@
 
       const providerTarget = document.getElementById('providerTarget');
       const shipmentType = document.getElementById('shipmentType');
-      const shippingZone = document.getElementById('shippingZone');
       const packageMode = document.getElementById('packageMode');
       const lineItemsWrap = document.getElementById('lineItemsWrap');
       const packageRowsWrap = document.getElementById('packageRowsWrap');
@@ -218,20 +206,67 @@
       const toNumber = (value) => Number(value || 0);
       const uid = () => Math.random().toString(36).slice(2, 10);
 
-      const computeTotals = () => {
-        const totalShipmentWeight = state.draft.package_rows.reduce((sum, row) => sum + (toNumber(row.no_of_boxes) * toNumber(row.per_box_weight_kg)), 0);
-        const boxes = state.draft.package_rows.reduce((sum, row) => sum + toNumber(row.no_of_boxes), 0);
-        const lineItemsTotal = state.draft.line_items.reduce((sum, item) => sum + (toNumber(item.quantity) * toNumber(item.unit_price)), 0);
-        state.draft.total_weight = Number(totalShipmentWeight.toFixed(2));
-        state.draft.invoice_amount = Number(lineItemsTotal.toFixed(2));
-        totalBoxes.textContent = String(boxes || 0);
-        totalWeight.textContent = `${state.draft.total_weight.toFixed(2)} kg`;
-        grandTotal.value = `₹${(lineItemsTotal + toNumber(state.draft.shipping_charges)).toFixed(2)}`;
+      const calculateManualOrderGrandTotal = () => Number(state.draft.line_items
+        .reduce((sum, item) => sum + (toNumber(item.quantity) * toNumber(item.unit_price)), 0)
+        .toFixed(2));
+
+      const shouldShowEwayBill = (visibleFields) => {
+        const grandTotalAmount = calculateManualOrderGrandTotal();
+        return grandTotalAmount > manualOrderRules.ewayBillAutoThreshold || visibleFields.includes('eway_bill_number');
+      };
+
+      const lookupIndianPincode = async (pincode) => {
+        const normalized = String(pincode || '').trim();
+        if (!/^\d{6}$/.test(normalized)) {
+          return null;
+        }
+        return pincodeDirectory[normalized] || null;
+      };
+
+      const applyPincodeLookup = async (pincode) => {
+        const lookup = await lookupIndianPincode(pincode);
+        if (!lookup) {
+          return;
+        }
+
+        state.draft.buyer_details.city = lookup.city;
+        state.draft.buyer_details.state = lookup.state;
       };
 
       const getRules = () => {
         const provider = providerCapabilities[state.draft.provider_target];
         return provider.field_rules[state.draft.shipment_type];
+      };
+
+      const getDocumentFieldsForRender = () => {
+        const rules = getRules();
+        const visibleFieldSet = new Set(rules.visible);
+        const ewayFields = ['eway_bill_number', 'eway_bill_document'];
+
+        if (shouldShowEwayBill(rules.visible)) {
+          ewayFields.forEach((fieldName) => visibleFieldSet.add(fieldName));
+        } else {
+          ewayFields.forEach((fieldName) => {
+            if (!rules.visible.includes(fieldName)) {
+              visibleFieldSet.delete(fieldName);
+            }
+          });
+        }
+
+        return Array.from(visibleFieldSet);
+      };
+
+      const computeTotals = () => {
+        const totalShipmentWeight = state.draft.package_rows.reduce((sum, row) => sum + (toNumber(row.no_of_boxes) * toNumber(row.per_box_weight_kg)), 0);
+        const boxes = state.draft.package_rows.reduce((sum, row) => sum + toNumber(row.no_of_boxes), 0);
+        const lineItemsTotal = calculateManualOrderGrandTotal();
+
+        state.draft.total_weight = Number(totalShipmentWeight.toFixed(2));
+        state.draft.invoice_amount = lineItemsTotal;
+
+        totalBoxes.textContent = String(boxes || 0);
+        totalWeight.textContent = `${state.draft.total_weight.toFixed(2)} kg`;
+        grandTotal.value = `₹${lineItemsTotal.toFixed(2)}`;
       };
 
       const validateDraft = () => {
@@ -303,7 +338,9 @@
             <label>HSN<input data-line-index="${index}" data-line-key="hsn" value="${item.hsn || ''}" /></label>
             <label>Qty<input type="number" min="1" data-line-index="${index}" data-line-key="quantity" value="${item.quantity || 1}" /></label>
             <label>Unit Price<input type="number" min="0" step="0.01" data-line-index="${index}" data-line-key="unit_price" value="${item.unit_price || 0}" /></label>
-            <button class="icon-btn" type="button" data-remove-line="${index}" ${state.draft.line_items.length === 1 ? 'disabled' : ''}>✕</button>
+            <div class="row-action-wrap">
+              <button class="icon-btn" type="button" aria-label="Remove item" data-remove-line="${index}" ${state.draft.line_items.length === 1 ? 'disabled' : ''}>✕</button>
+            </div>
           `;
           lineItemsWrap.appendChild(row);
         });
@@ -320,7 +357,9 @@
             <label>Length (cm)<input type="number" min="1" data-package-index="${index}" data-package-key="length_cm" value="${row.length_cm}" /></label>
             <label>Width (cm)<input type="number" min="1" data-package-index="${index}" data-package-key="width_cm" value="${row.width_cm}" /></label>
             <label>Height (cm)<input type="number" min="1" data-package-index="${index}" data-package-key="height_cm" value="${row.height_cm}" /></label>
-            <button class="icon-btn" type="button" data-remove-package="${index}" ${state.draft.package_rows.length === 1 ? 'disabled' : ''}>✕</button>
+            <div class="row-action-wrap">
+              <button class="icon-btn" type="button" aria-label="Remove package row" data-remove-package="${index}" ${state.draft.package_rows.length === 1 ? 'disabled' : ''}>✕</button>
+            </div>
           `;
           packageRowsWrap.appendChild(item);
         });
@@ -332,16 +371,16 @@
             <input type="radio" name="pickup" value="${pickup.id}" ${state.draft.warehouse_or_pickup_address.selected_pickup_id === pickup.id ? 'checked' : ''} />
             <div>
               <strong>${pickup.name}</strong>
+              <p class="muted small">${pickup.contact_person_name} · ${pickup.phone}</p>
               <p class="muted small">${pickup.address}</p>
-              <p class="muted small">${pickup.cityStatePincode}</p>
-              <p class="muted small">${pickup.phone}</p>
+              <p class="muted small">Pincode: ${pickup.pincode}</p>
             </div>
           </label>
         `).join('');
       };
 
       const renderDynamicDocs = () => {
-        const rules = getRules();
+        const visibleFields = getDocumentFieldsForRender();
         const fields = {
           invoice_number: '<label>Invoice Number<input data-field="invoice_number" /></label>',
           invoice_amount: '<label>Invoice Amount<input type="number" step="0.01" data-field="invoice_amount" /></label>',
@@ -354,7 +393,7 @@
           shipping_mode: '<label>Shipping Mode<select data-field="shipping_mode"><option>Surface</option><option>Air</option><option>Express</option></select></label>'
         };
 
-        dynamicDocsSection.innerHTML = rules.visible.map((fieldName) => fields[fieldName] || '').join('');
+        dynamicDocsSection.innerHTML = visibleFields.map((fieldName) => fields[fieldName] || '').join('');
       };
 
       const syncPrimitiveFields = () => {
@@ -369,8 +408,44 @@
         });
       };
 
-      const persist = () => {
+      const persistDraft = () => {
         localStorage.setItem('manual_order_draft', JSON.stringify(state.draft));
+      };
+
+      const persistSavedRecords = () => {
+        localStorage.setItem('manual_order_saved_records', JSON.stringify(state.savedDrafts));
+      };
+
+      const saveManualOrderDraft = () => {
+        const savedAt = new Date().toISOString();
+        state.draft.save_mode = 'save';
+        persistDraft();
+
+        state.savedDrafts = [
+          {
+            order_id: state.draft.order_id,
+            provider_target: state.draft.provider_target,
+            shipment_type: state.draft.shipment_type,
+            grand_total: calculateManualOrderGrandTotal(),
+            saved_at: savedAt
+          },
+          ...state.savedDrafts.filter((entry) => entry.order_id !== state.draft.order_id)
+        ].slice(0, 25);
+
+        persistSavedRecords();
+        return 'Manual order saved in shared mock state.';
+      };
+
+      const createManualOrder = () => {
+        state.draft.save_mode = 'create';
+        persistDraft();
+        return 'Manual order created successfully (mock).';
+      };
+
+      const saveAndAssignCourier = () => {
+        state.draft.save_mode = 'create_and_assign';
+        persistDraft();
+        return 'Manual order saved and courier assignment queued (mock).';
       };
 
       const redraw = () => {
@@ -392,18 +467,18 @@
 
       document.getElementById('addLineItemBtn').addEventListener('click', () => {
         state.draft.line_items.push({ id: uid(), product_name: '', sku: '', hsn: '', category: '', quantity: 1, unit_price: 0, tax_percent: 0 });
-        persist();
+        persistDraft();
         redraw();
       });
 
       document.getElementById('addPackageRowBtn').addEventListener('click', () => {
         if (state.draft.package_mode === PACKAGE_MODE.SINGLE) return;
         state.draft.package_rows.push({ id: uid(), no_of_boxes: 1, per_box_weight_kg: 0.5, length_cm: 20, width_cm: 14, height_cm: 7 });
-        persist();
+        persistDraft();
         redraw();
       });
 
-      document.addEventListener('input', (event) => {
+      document.addEventListener('input', async (event) => {
         const target = event.target;
         if (!(target instanceof HTMLElement)) return;
 
@@ -411,14 +486,20 @@
           const path = target.dataset.field;
           const value = target.type === 'number' ? toNumber(target.value) : target.value;
           setByPath(state.draft, path, value);
+
           if (path === 'shipment_type') {
             state.draft.package_mode = target.value === 'B2B' ? PACKAGE_MODE.MULTI : PACKAGE_MODE.SINGLE;
             if (state.draft.package_mode === PACKAGE_MODE.SINGLE) {
               state.draft.package_rows = [state.draft.package_rows[0]];
             }
           }
+
+          if (path === 'buyer_details.pincode') {
+            await applyPincodeLookup(value);
+          }
+
           validateDraft();
-          persist();
+          persistDraft();
           redraw();
           return;
         }
@@ -429,8 +510,9 @@
           const value = target.type === 'number' ? toNumber(target.value) : target.value;
           state.draft.line_items[index][key] = value;
           validateDraft();
-          persist();
+          persistDraft();
           computeTotals();
+          renderDynamicDocs();
           return;
         }
 
@@ -439,14 +521,14 @@
           const key = target.dataset.packageKey;
           state.draft.package_rows[index][key] = toNumber(target.value);
           validateDraft();
-          persist();
+          persistDraft();
           computeTotals();
           return;
         }
 
         if (target.matches('input[name="pickup"]')) {
           state.draft.warehouse_or_pickup_address.selected_pickup_id = target.value;
-          persist();
+          persistDraft();
           redraw();
         }
       });
@@ -454,6 +536,7 @@
       document.addEventListener('change', (event) => {
         const target = event.target;
         if (!(target instanceof HTMLElement)) return;
+
         if (target.matches('[data-upload-field]')) {
           const field = target.dataset.uploadField;
           const file = target.files && target.files[0];
@@ -468,7 +551,7 @@
             state.draft[field] = null;
           }
           validateDraft();
-          persist();
+          persistDraft();
           redraw();
         }
       });
@@ -481,7 +564,7 @@
           const index = Number(target.dataset.removeLine);
           state.draft.line_items.splice(index, 1);
           validateDraft();
-          persist();
+          persistDraft();
           redraw();
           return;
         }
@@ -490,36 +573,39 @@
           const index = Number(target.dataset.removePackage);
           state.draft.package_rows.splice(index, 1);
           validateDraft();
-          persist();
+          persistDraft();
           redraw();
           return;
         }
 
         if (target.matches('[data-save-mode]')) {
           const mode = target.dataset.saveMode;
-          state.draft.save_mode = mode;
           const errors = validateDraft();
-          persist();
+          persistDraft();
           redraw();
 
-          if (mode !== 'draft' && Object.keys(errors).length) {
+          if (mode !== 'save' && Object.keys(errors).length) {
             return;
           }
 
-          const successMessage = {
-            draft: 'Draft saved in mock frontend state.',
-            create: 'Manual order created successfully (mock).',
-            create_and_assign: 'Manual order created and courier assignment queued (mock).'
+          const actionByMode = {
+            save: saveManualOrderDraft,
+            create: createManualOrder,
+            create_and_assign: saveAndAssignCourier
           };
 
-          alert(successMessage[mode] || 'Saved');
+          const action = actionByMode[mode] || saveManualOrderDraft;
+          alert(action());
         }
       });
 
       state.draft.provider_target = state.draft.provider_target || providerOptions[0].value;
+      state.draft.shipping_zone = manualOrderRules.defaultShippingZone;
+      if (!state.draft.warehouse_or_pickup_address.selected_pickup_id && pickupAddresses.length) {
+        state.draft.warehouse_or_pickup_address.selected_pickup_id = pickupAddresses[0].id;
+      }
       providerTarget.value = state.draft.provider_target;
       shipmentType.value = state.draft.shipment_type;
-      shippingZone.value = state.draft.shipping_zone;
       packageMode.value = state.draft.package_mode;
 
       validateDraft();
