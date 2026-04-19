@@ -33,11 +33,13 @@
             </div>
             <div>
               <p class="muted small">Weight</p>
-              <p><strong><%= order.package_details.weight_kg %> kg</strong></p>
+              <p><strong><%= (order.package_details?.total_weight_kg ?? 0).toFixed(2) %> kg</strong></p>
             </div>
             <div>
               <p class="muted small">Dimensions</p>
-              <p><strong><%= order.package_details.dimensions_cm.length %> × <%= order.package_details.dimensions_cm.width %> × <%= order.package_details.dimensions_cm.height %> cm</strong></p>
+              <% const firstPackageRow = order.package_details?.boxes?.[0]; %>
+              <p><strong><%= firstPackageRow ? `${firstPackageRow.length_cm} × ${firstPackageRow.width_cm} × ${firstPackageRow.height_cm} cm` : 'Package details pending' %></strong></p>
+              <p class="muted small"><%= order.package_details?.boxes?.length ?? 0 %> package row(s)</p>
             </div>
             <div>
               <p class="muted small">Delivery Location</p>
@@ -64,6 +66,14 @@
             <p class="muted small">Column comparison ready for direct and aggregator API rate feeds.</p>
           </div>
 
+          <% if (!rates.length) { %>
+            <div class="empty-state dispatch-empty-state">
+              <div class="empty-state-content">
+                <p><strong>Rates are unavailable right now.</strong></p>
+                <p class="muted small">Package details may be incomplete in mock data. Update package rows and retry.</p>
+              </div>
+            </div>
+          <% } else { %>
           <div class="dispatch-rate-comparison">
             <% rates.forEach((rate) => { %>
               <article class="dispatch-rate-column <%= selectedRateId === rate.option_id ? 'is-selected' : '' %>">
@@ -110,6 +120,7 @@
               </article>
             <% }) %>
           </div>
+          <% } %>
         </section>
       </main>
     </div>

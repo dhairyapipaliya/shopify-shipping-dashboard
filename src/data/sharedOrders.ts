@@ -1,6 +1,14 @@
 import type { OperationalOrderStatus } from "../utils/orderStatuses.js";
 import type { DispatchRateOption } from "../services/dispatchRates.js";
-import { derivePackageMode, normalizePackageBoxes, PACKAGE_MODE, sumBoxWeights, type PackageBox, type PackageMode } from "../utils/packageMode.js";
+import {
+  derivePackageMode,
+  normalizePackageBox,
+  normalizePackageBoxes,
+  PACKAGE_MODE,
+  sumBoxWeights,
+  type PackageBox,
+  type PackageMode
+} from "../utils/packageMode.js";
 
 export type ShopifyReadyLineItem = {
   title: string;
@@ -74,13 +82,15 @@ const defaultPickupAddress: ShopifyReadyAddress = {
   country: "India"
 };
 
-const createDefaultBox = (weightKg: number, dimensions: { length: number; width: number; height: number }): PackageBox => ({
-  id: crypto.randomUUID(),
-  length_cm: dimensions.length,
-  width_cm: dimensions.width,
-  height_cm: dimensions.height,
-  weight_kg: weightKg
-});
+const createDefaultBox = (weightKg: number, dimensions: { length: number; width: number; height: number }, noOfBoxes = 1): PackageBox =>
+  normalizePackageBox({
+    id: crypto.randomUUID(),
+    no_of_boxes: noOfBoxes,
+    per_box_weight_kg: weightKg,
+    length_cm: dimensions.length,
+    width_cm: dimensions.width,
+    height_cm: dimensions.height
+  });
 
 const resolvePackageDetails = (packageDetails?: NewSharedOrderInput["package_details"]): ShopifyReadyPackageDetails => {
   const defaultBox = createDefaultBox(0.5, { length: 20, width: 14, height: 7 });
@@ -398,7 +408,7 @@ export const updateSharedOrderPackageDetails = (
   const order = getSharedOrderById(orderId);
   if (!order) return undefined;
 
-  const boxesWithIds = update.boxes.map((box) => ({ ...box, id: box.id || crypto.randomUUID() }));
+  const boxesWithIds = update.boxes.map((box, index) => normalizePackageBox({ ...box, id: box.id || `pkg-${index + 1}` }));
   const normalizedBoxes = normalizePackageBoxes(boxesWithIds, update.package_mode);
   const normalizedTotalWeight = Math.max(update.total_weight_kg, sumBoxWeights(normalizedBoxes));
 
