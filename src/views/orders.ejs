@@ -55,16 +55,17 @@
             </div>
           </div>
 
-          <% if (!orders.length) { %>
-            <div class="empty-state orders-empty-state">
-              <div class="empty-state-content">
-                <p><strong>No orders in this stage yet.</strong></p>
-                <p class="muted small">Try choosing a different status filter, or sync fresh orders from Shopify.</p>
+          <div class="orders-content-shell <%= !orders.length ? 'is-empty' : '' %>">
+            <% if (!orders.length) { %>
+              <div class="empty-state orders-empty-state">
+                <div class="empty-state-content">
+                  <p><strong>No orders in this stage yet.</strong></p>
+                  <p class="muted small">Try choosing a different status filter, or sync fresh orders from Shopify.</p>
+                </div>
               </div>
-            </div>
-          <% } else { %>
-          <div class="table-wrap">
-            <table class="orders-operations-table">
+            <% } else { %>
+            <div class="table-wrap">
+              <table class="orders-operations-table">
               <thead>
                 <tr>
                   <th>Order Date</th>
@@ -166,7 +167,7 @@
                       <span class="muted small">Shipment <%= order.latestShipment.status %></span>
                     </div>
                   <% } else if (order.operationalStatus === 'pickupsAndManifests') { %>
-                    <div class="row-stack action-row-equal">
+                    <div class="row-stack action-row-stack">
                       <form method="post" action="/orders/<%= encodeURIComponent(order.id) %>/print-label">
                         <button class="btn btn-sm btn-soft action-btn-equal" type="submit">Print Label</button>
                       </form>
@@ -197,9 +198,10 @@
               </tr>
               <% }) %>
               </tbody>
-            </table>
+              </table>
+            </div>
+            <% } %>
           </div>
-          <% } %>
         </section>
       </main>
     </div>

@@ -382,7 +382,7 @@ input:focus, select:focus {
   overflow: hidden;
   background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 20px rgba(15, 23, 42, 0.06);
-  min-height: 44px;
+  min-height: 60px;
 }
 
 .workflow-tab {
@@ -391,20 +391,20 @@ input:focus, select:focus {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 10px 12px;
+  padding: 14px 12px;
   text-align: center;
   text-decoration: none;
   color: #334155;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 700;
+  line-height: 1.25;
   border-right: 1px solid #e2e8f0;
   transition: background-color .16s ease, color .16s ease, box-shadow .16s ease;
 }
 
 .workflow-tab-label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .workflow-tab:hover {
   background: #eff6ff;
@@ -499,9 +499,23 @@ input:focus, select:focus {
 
 .action-row-equal form { width: 100%; }
 
+.action-row-stack {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  min-width: 170px;
+}
+
+.action-row-stack form {
+  width: 100%;
+}
+
 .action-btn-equal {
   width: 100%;
-  min-height: 34px;
+  min-height: 38px;
+  justify-content: center;
+  display: inline-flex;
+  align-items: center;
 }
 
 .new-order-actions {
@@ -512,7 +526,7 @@ input:focus, select:focus {
 }
 
 .orders-action-cell {
-  min-width: 210px;
+  min-width: 235px;
 }
 
 .btn-action-main {
@@ -655,6 +669,26 @@ input:focus, select:focus {
   gap: 4px;
 }
 
+.orders-content-shell {
+  min-height: 440px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.orders-content-shell.is-empty {
+  display: grid;
+}
+
+.orders-content-shell .table-wrap {
+  height: 100%;
+}
+
+.orders-content-shell .orders-operations-table {
+  border: 0;
+}
+
 .empty-state {
   border: 1px dashed #cbd5e1;
   border-radius: 12px;
@@ -671,8 +705,10 @@ input:focus, select:focus {
 }
 
 .orders-empty-state {
-  min-height: 280px;
+  min-height: 440px;
   display: grid;
+  border: 0;
+  border-radius: 0;
 }
 
 .dispatch-empty-state {
