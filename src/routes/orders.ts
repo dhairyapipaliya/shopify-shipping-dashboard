@@ -151,31 +151,34 @@ ordersRouter.post("/orders/:id/package", requireAuth, (req, res) => {
   const rawMode = typeof req.body.packageMode === "string" ? req.body.packageMode : PACKAGE_MODE.SINGLE_PACKAGE_B2C;
   const packageMode: PackageMode = rawMode === PACKAGE_MODE.MULTI_PACKAGE_B2B ? PACKAGE_MODE.MULTI_PACKAGE_B2B : PACKAGE_MODE.SINGLE_PACKAGE_B2C;
 
+  const quantities = Array.isArray(req.body.boxQuantity) ? req.body.boxQuantity : [req.body.boxQuantity];
   const lengths = Array.isArray(req.body.boxLengthCm) ? req.body.boxLengthCm : [req.body.boxLengthCm];
   const widths = Array.isArray(req.body.boxWidthCm) ? req.body.boxWidthCm : [req.body.boxWidthCm];
   const heights = Array.isArray(req.body.boxHeightCm) ? req.body.boxHeightCm : [req.body.boxHeightCm];
-  const weights = Array.isArray(req.body.boxWeightKg) ? req.body.boxWeightKg : [req.body.boxWeightKg];
+  const perBoxWeights = Array.isArray(req.body.boxPerWeightKg) ? req.body.boxPerWeightKg : [req.body.boxPerWeightKg];
 
-  const boxes: PackageBox[] = lengths
+  const boxes: PackageBox[] = quantities
     .map((_, index) => {
+      const no_of_boxes = Math.max(1, Math.round(Number(quantities[index]) || 1));
       const length_cm = Number(lengths[index]);
       const width_cm = Number(widths[index]);
       const height_cm = Number(heights[index]);
-      const weight_kg = Number(weights[index]);
-      if (!length_cm || !width_cm || !height_cm || !weight_kg) {
+      const per_box_weight_kg = Number(perBoxWeights[index]);
+      if (!length_cm || !width_cm || !height_cm || !per_box_weight_kg) {
         return null;
       }
       return {
-        id: `box-${index + 1}`,
+        id: `pkg-${index + 1}`,
+        no_of_boxes,
+        per_box_weight_kg,
         length_cm,
         width_cm,
-        height_cm,
-        weight_kg
+        height_cm
       };
     })
     .filter((box): box is PackageBox => box !== null);
 
-  const totalWeight = Number(req.body.totalWeightKg) || boxes.reduce((sum, box) => sum + box.weight_kg, 0);
+  const totalWeight = boxes.reduce((sum, box) => sum + box.no_of_boxes * box.per_box_weight_kg, 0);
 
   updateSharedOrderPackageDetails(order.order_id, {
     package_mode: packageMode,

@@ -350,13 +350,17 @@ input:focus, select:focus {
   grid-template-columns: repeat(4, minmax(220px, 1fr));
   gap: 12px;
   overflow-x: auto;
-  padding-bottom: 4px;
+  padding: 2px 2px 6px;
 }
 
 .workflow-group {
   display: grid;
   gap: 7px;
   min-width: 220px;
+  padding: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
 }
 
 .workflow-group-title {
@@ -382,7 +386,7 @@ input:focus, select:focus {
 }
 
 .workflow-tab {
-  min-width: 0;
+  min-width: 92px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -501,9 +505,21 @@ input:focus, select:focus {
 }
 
 .new-order-actions {
-  display: inline-flex;
+  display: flex;
   align-items: stretch;
-  gap: 6px;
+  gap: 8px;
+  min-width: 170px;
+}
+
+.orders-action-cell {
+  min-width: 210px;
+}
+
+.btn-action-main {
+  min-width: 130px;
+  justify-content: center;
+  display: inline-flex;
+  align-items: center;
 }
 
 .action-menu {
@@ -583,7 +599,14 @@ input:focus, select:focus {
 .box-grid {
   display: grid;
   gap: 8px;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.package-weight-readonly {
+  border: 1px solid #dbeafe;
+  background: #f8fbff;
+  border-radius: 10px;
+  padding: 10px 12px;
 }
 
 .modal-footer {
@@ -638,6 +661,23 @@ input:focus, select:focus {
   background: #f8fafc;
   padding: 20px;
   text-align: center;
+}
+
+.empty-state-content {
+  display: grid;
+  gap: 8px;
+  align-content: center;
+  justify-items: center;
+}
+
+.orders-empty-state {
+  min-height: 280px;
+  display: grid;
+}
+
+.dispatch-empty-state {
+  min-height: 220px;
+  display: grid;
 }
 
 .badge {

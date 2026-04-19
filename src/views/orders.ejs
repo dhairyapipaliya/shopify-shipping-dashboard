@@ -56,9 +56,11 @@
           </div>
 
           <% if (!orders.length) { %>
-            <div class="empty-state">
-              <p><strong>No orders found for selected status.</strong></p>
-              <p class="muted small">Try choosing a different status filter or sync fresh orders.</p>
+            <div class="empty-state orders-empty-state">
+              <div class="empty-state-content">
+                <p><strong>No orders in this stage yet.</strong></p>
+                <p class="muted small">Try choosing a different status filter, or sync fresh orders from Shopify.</p>
+              </div>
             </div>
           <% } else { %>
           <div class="table-wrap">
@@ -118,7 +120,7 @@
                       <% } %>
                     </div>
                     <span class="muted small"><%= order.dimensionsLabel %> cm</span>
-                    <span class="muted small"><%= order.boxCount %> box · <%= order.packageMode === 'MULTI_PACKAGE_B2B' ? 'Multiple Package (B2B)' : 'Single Package (B2C)' %></span>
+                    <span class="muted small"><%= order.boxCount %> boxes · <%= order.packageBoxes.length %> package row<%= order.packageBoxes.length === 1 ? '' : 's' %> · <%= order.packageMode === 'MULTI_PACKAGE_B2B' ? 'Multiple Package (B2B)' : 'Single Package (B2C)' %></span>
                   </div>
                 </td>
                 <td>
@@ -157,7 +159,7 @@
                 <td>
                   <span class="badge <%= order.operationalStatusBadgeClass %>"><%= order.operationalStatusLabel %></span>
                 </td>
-                <td>
+                <td class="orders-action-cell">
                   <% if (order.latestShipment) { %>
                     <div class="row-stack">
                       <span class="badge <%= order.operationalStatusBadgeClass %>"><%= order.operationalStatusLabel %></span>
@@ -178,7 +180,7 @@
                     <a class="link" href="/orders/<%= order.id %>/quotes">Assign Courier</a>
                   <% } else { %>
                     <div class="new-order-actions">
-                      <a class="btn btn-sm" href="/dispatch/<%= encodeURIComponent(order.id) %>">Assign Courier</a>
+                      <a class="btn btn-sm btn-action-main" href="/dispatch/<%= encodeURIComponent(order.id) %>">Assign Courier</a>
                       <details class="action-menu">
                         <summary class="icon-btn" aria-label="Order actions">▾</summary>
                         <div class="action-menu-list">
@@ -214,13 +216,13 @@
           <option value="MULTI_PACKAGE_B2B">Multiple Package (B2B)</option>
         </select>
       </label>
-      <label>
-        Total weight (kg)
-        <input type="number" step="0.01" min="0.01" name="totalWeightKg" id="totalWeightKg" required />
-      </label>
+      <div class="package-weight-readonly">
+        <p class="muted small">Total shipment weight</p>
+        <p><strong><span id="totalWeightKg">0.00</span> kg</strong></p>
+      </div>
       <div class="box-rows" id="boxRows"></div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-sm btn-soft" id="addBoxBtn">Add box</button>
+        <button type="button" class="btn btn-sm btn-soft" id="addBoxBtn">Add box group</button>
         <div class="modal-footer-right">
           <button type="button" class="btn btn-sm btn-soft" id="closePackageModal">Cancel</button>
           <button type="submit" class="btn btn-sm">Save package</button>
@@ -238,21 +240,37 @@
       const boxRows = document.getElementById('boxRows');
       const addBoxBtn = document.getElementById('addBoxBtn');
       const packageModeSelect = document.getElementById('packageModeSelect');
-      const totalWeightInput = document.getElementById('totalWeightKg');
+      const totalWeightValue = document.getElementById('totalWeightKg');
       const orderIdInput = document.getElementById('packageOrderId');
       const closeBtn = document.getElementById('closePackageModal');
       const toast = document.getElementById('awbCopyToast');
+
+      const defaultGroup = { no_of_boxes: 1, per_box_weight_kg: 0.5, length_cm: 20, width_cm: 14, height_cm: 7 };
+      const toSafeNumber = (value, fallback = 0) => Number.isFinite(Number(value)) ? Number(value) : fallback;
+      const readCurrentRows = () => Array.from(boxRows.querySelectorAll('.box-row')).map((row) => ({
+        no_of_boxes: Math.max(1, Math.round(toSafeNumber(row.querySelector('[name="boxQuantity"]').value, 1))),
+        per_box_weight_kg: Math.max(0, toSafeNumber(row.querySelector('[name="boxPerWeightKg"]').value, 0)),
+        length_cm: Math.max(0, Math.round(toSafeNumber(row.querySelector('[name="boxLengthCm"]').value, 0))),
+        width_cm: Math.max(0, Math.round(toSafeNumber(row.querySelector('[name="boxWidthCm"]').value, 0))),
+        height_cm: Math.max(0, Math.round(toSafeNumber(row.querySelector('[name="boxHeightCm"]').value, 0)))
+      }));
+
+      const updateTotalWeight = () => {
+        const totalWeight = readCurrentRows().reduce((sum, row) => sum + (row.no_of_boxes * row.per_box_weight_kg), 0);
+        totalWeightValue.textContent = totalWeight.toFixed(2);
+      };
 
       const renderBoxRow = (box, index, allowRemove) => {
         const row = document.createElement('div');
         row.className = 'box-row';
         row.innerHTML = `
-          <p class="small muted">Box ${index + 1}</p>
+          <p class="small muted">Package group ${index + 1}</p>
           <div class="box-grid">
+            <label>No. of box<input required type="number" min="1" step="1" name="boxQuantity" value="${box.no_of_boxes || 1}" /></label>
+            <label>Weight / box (kg)<input required type="number" min="0.01" step="0.01" name="boxPerWeightKg" value="${box.per_box_weight_kg || ''}" /></label>
             <label>Length (cm)<input required type="number" min="1" step="1" name="boxLengthCm" value="${box.length_cm || ''}" /></label>
             <label>Width (cm)<input required type="number" min="1" step="1" name="boxWidthCm" value="${box.width_cm || ''}" /></label>
             <label>Height (cm)<input required type="number" min="1" step="1" name="boxHeightCm" value="${box.height_cm || ''}" /></label>
-            <label>Weight (kg)<input required type="number" min="0.01" step="0.01" name="boxWeightKg" value="${box.weight_kg || ''}" /></label>
           </div>
           ${allowRemove ? '<button class="btn btn-sm btn-soft remove-box" type="button">Remove</button>' : ''}
         `;
@@ -263,23 +281,18 @@
             refreshBoxRows();
           });
         }
+        row.querySelectorAll('input').forEach((input) => input.addEventListener('input', updateTotalWeight));
         boxRows.appendChild(row);
       };
 
-      const getCurrentRows = () => Array.from(boxRows.querySelectorAll('.box-row')).map((row) => ({
-        length_cm: Number(row.querySelector('[name="boxLengthCm"]').value) || 0,
-        width_cm: Number(row.querySelector('[name="boxWidthCm"]').value) || 0,
-        height_cm: Number(row.querySelector('[name="boxHeightCm"]').value) || 0,
-        weight_kg: Number(row.querySelector('[name="boxWeightKg"]').value) || 0
-      }));
-
       const refreshBoxRows = () => {
         const isMulti = packageModeSelect.value === 'MULTI_PACKAGE_B2B';
-        const boxes = getCurrentRows();
+        const boxes = readCurrentRows();
         boxRows.innerHTML = '';
-        const nextBoxes = boxes.length ? boxes : [{ length_cm: 20, width_cm: 14, height_cm: 7, weight_kg: Number(totalWeightInput.value) || 0.5 }];
-        (isMulti ? nextBoxes : [nextBoxes[0]]).forEach((box, index, arr) => renderBoxRow(box, index, isMulti && arr.length > 1));
+        const nextBoxes = boxes.length ? boxes : [defaultGroup];
+        (isMulti ? nextBoxes : [{ ...nextBoxes[0], no_of_boxes: 1 }]).forEach((box, index, arr) => renderBoxRow(box, index, isMulti && arr.length > 1));
         addBoxBtn.disabled = !isMulti;
+        updateTotalWeight();
       };
 
       document.querySelectorAll('[data-package-editor]').forEach((button) => {
@@ -292,10 +305,10 @@
           orderIdInput.value = orderId;
           form.action = `/orders/${encodeURIComponent(orderId)}/package`;
           packageModeSelect.value = packageMode;
-          totalWeightInput.value = totalWeight;
+          totalWeightValue.textContent = Number(totalWeight || 0).toFixed(2);
 
           boxRows.innerHTML = '';
-          (boxes.length ? boxes : [{ length_cm: 20, width_cm: 14, height_cm: 7, weight_kg: Number(totalWeight) || 0.5 }]).forEach((box, index, arr) => {
+          (boxes.length ? boxes : [{ ...defaultGroup, per_box_weight_kg: Number(totalWeight) || 0.5 }]).forEach((box, index, arr) => {
             const isMulti = packageMode === 'MULTI_PACKAGE_B2B';
             renderBoxRow(box, index, isMulti && arr.length > 1);
           });
@@ -308,7 +321,7 @@
       packageModeSelect.addEventListener('change', refreshBoxRows);
       addBoxBtn.addEventListener('click', () => {
         if (packageModeSelect.value !== 'MULTI_PACKAGE_B2B') return;
-        renderBoxRow({ length_cm: 20, width_cm: 14, height_cm: 7, weight_kg: 0.5 }, boxRows.children.length, true);
+        renderBoxRow(defaultGroup, boxRows.children.length, true);
         refreshBoxRows();
       });
 

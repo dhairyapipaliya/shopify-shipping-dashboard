@@ -24,7 +24,7 @@ export type OrdersPageRow = {
   dimensionsLabel: string;
   packageMode: PackageMode;
   boxCount: number;
-  packageBoxes: Array<{ length_cm: number; width_cm: number; height_cm: number; weight_kg: number }>;
+  packageBoxes: Array<{ no_of_boxes: number; per_box_weight_kg: number; length_cm: number; width_cm: number; height_cm: number }>;
   paymentAmount: number;
   paymentType: "Prepaid" | "COD";
   shippingName: string;
@@ -86,12 +86,13 @@ export const mapMockOrderToRow = (order: SharedShopifyOrder): OrdersPageRow => {
     weightKg: order.package_details?.total_weight_kg ?? 0,
     dimensionsLabel: `${firstBox?.length_cm ?? 0} x ${firstBox?.width_cm ?? 0} x ${firstBox?.height_cm ?? 0}`,
     packageMode: order.package_details.package_mode,
-    boxCount: order.package_details.boxes.length,
+    boxCount: order.package_details.boxes.reduce((sum, box) => sum + box.no_of_boxes, 0),
     packageBoxes: order.package_details.boxes.map((box) => ({
+      no_of_boxes: box.no_of_boxes,
+      per_box_weight_kg: box.per_box_weight_kg,
       length_cm: box.length_cm,
       width_cm: box.width_cm,
       height_cm: box.height_cm,
-      weight_kg: box.weight_kg
     })),
     paymentAmount: order.total_price,
     paymentType: normalizePaymentType(order.payment_type),
@@ -139,7 +140,7 @@ export const mapDbOrderToRow = (order: Order & { shipments: Shipment[] }): Order
     dimensionsLabel: `${order.lengthCm} x ${order.widthCm} x ${order.heightCm}`,
     packageMode: PACKAGE_MODE.SINGLE_PACKAGE_B2C,
     boxCount: 1,
-    packageBoxes: [{ length_cm: order.lengthCm, width_cm: order.widthCm, height_cm: order.heightCm, weight_kg: order.totalWeightGrams / 1000 }],
+    packageBoxes: [{ no_of_boxes: 1, per_box_weight_kg: order.totalWeightGrams / 1000, length_cm: order.lengthCm, width_cm: order.widthCm, height_cm: order.heightCm }],
     paymentAmount: order.orderValue,
     paymentType: normalizePaymentType(order.paymentMode),
     shippingName: order.customerName,
