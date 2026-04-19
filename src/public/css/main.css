@@ -670,23 +670,26 @@ input:focus, select:focus {
 }
 
 .orders-content-shell {
-  min-height: 440px;
+  min-height: 520px;
   border: 1px solid var(--border);
   border-radius: 12px;
   overflow: hidden;
   background: #fff;
 }
 
-.orders-content-shell.is-empty {
-  display: grid;
+.orders-content-body {
+  min-height: 520px;
+  display: flex;
 }
 
 .orders-content-shell .table-wrap {
+  flex: 1;
   height: 100%;
 }
 
 .orders-content-shell .orders-operations-table {
   border: 0;
+  height: 100%;
 }
 
 .empty-state {
@@ -704,11 +707,17 @@ input:focus, select:focus {
   justify-items: center;
 }
 
+.orders-empty-row td {
+  padding: 0;
+}
+
 .orders-empty-state {
-  min-height: 440px;
+  min-height: 100%;
   display: grid;
+  place-items: center;
   border: 0;
   border-radius: 0;
+  padding: 24px;
 }
 
 .dispatch-empty-state {
@@ -766,17 +775,29 @@ input:focus, select:focus {
 
 .dispatch-rate-comparison {
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(230px, 1fr);
+  grid-template-columns: repeat(2, minmax(280px, 1fr));
   gap: 12px;
-  overflow-x: auto;
-  padding-bottom: 6px;
+}
+
+.dispatch-provider-column {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  background: #ffffff;
+}
+
+.dispatch-provider-options {
+  display: grid;
+  gap: 12px;
 }
 
 .dispatch-rate-column {
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 14px;
+  border-radius: 10px;
+  padding: 12px;
   display: grid;
   gap: 14px;
   align-content: start;
@@ -863,8 +884,7 @@ input:focus, select:focus {
     grid-template-columns: 1fr;
   }
   .dispatch-rate-comparison {
-    grid-auto-flow: row;
-    grid-auto-columns: 1fr;
+    grid-template-columns: 1fr;
   }
 }
 @media (max-width: 640px) {

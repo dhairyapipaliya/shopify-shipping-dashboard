@@ -55,34 +55,39 @@
             </div>
           </div>
 
-          <div class="orders-content-shell <%= !orders.length ? 'is-empty' : '' %>">
-            <% if (!orders.length) { %>
-              <div class="empty-state orders-empty-state">
-                <div class="empty-state-content">
-                  <p><strong>No orders in this stage yet.</strong></p>
-                  <p class="muted small">Try choosing a different status filter, or sync fresh orders from Shopify.</p>
-                </div>
-              </div>
-            <% } else { %>
-            <div class="table-wrap">
-              <table class="orders-operations-table">
-              <thead>
-                <tr>
-                  <th>Order Date</th>
-                  <th>Order Details</th>
-                  <th>Product Details</th>
-                  <th>Package Details</th>
-                  <th>Payment</th>
-                  <th>Shipping Details</th>
-                  <th>Courier Selection</th>
-                  <th>Tracking Info</th>
-                  <th>Status</th>
-                  <th>Action</th>
+          <div class="orders-content-shell">
+            <div class="orders-content-body">
+              <div class="table-wrap">
+                <table class="orders-operations-table">
+                <thead>
+                  <tr>
+                    <th>Order Date</th>
+                    <th>Order Details</th>
+                    <th>Product Details</th>
+                    <th>Package Details</th>
+                    <th>Payment</th>
+                    <th>Shipping Details</th>
+                    <th>Courier Selection</th>
+                    <th>Tracking Info</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                <% if (!orders.length) { %>
+                <tr class="orders-empty-row">
+                  <td colspan="10">
+                    <div class="empty-state orders-empty-state">
+                      <div class="empty-state-content">
+                        <p><strong>No orders in this stage yet.</strong></p>
+                        <p class="muted small">Try choosing a different status filter, or sync fresh orders from Shopify.</p>
+                      </div>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-              <% orders.forEach((order) => { %>
-              <tr>
+                <% } %>
+                <% orders.forEach((order) => { %>
+                <tr>
                 <td>
                   <div class="cell-stack">
                     <strong><%= order.orderDateLabel %></strong>
@@ -195,12 +200,12 @@
                     </div>
                   <% } %>
                 </td>
-              </tr>
-              <% }) %>
-              </tbody>
-              </table>
+                </tr>
+                <% }) %>
+                </tbody>
+                </table>
+              </div>
             </div>
-            <% } %>
           </div>
         </section>
       </main>
