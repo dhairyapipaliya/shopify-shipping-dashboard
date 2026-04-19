@@ -13,7 +13,6 @@ export type PaymentMode = "PREPAID" | "COD";
 export type ManualOrderAddress = {
   contact_name: string;
   phone: string;
-  alternate_phone: string;
   email: string;
   gstin: string;
   address_line_1: string;
@@ -54,7 +53,7 @@ export type ManualOrderDraft = {
   order_source: "manual";
   provider_target: ManualOrderProvider;
   shipment_type: ShipmentType;
-  shipping_zone: "domestic" | "international";
+  shipping_zone: "domestic";
   order_id: string;
   reference_id: string;
   order_date: string;
@@ -71,7 +70,6 @@ export type ManualOrderDraft = {
   package_rows: ManualPackageRow[];
   total_weight: number;
   payment_mode: PaymentMode;
-  shipping_charges: number;
   invoice_number: string;
   invoice_amount: number;
   invoice_document: UploadedDoc | null;
@@ -103,6 +101,11 @@ export type ProviderCapabilities = {
   supports_assign_later: boolean;
   supports_documents: boolean;
   field_rules: Record<ShipmentType, ProviderFieldRules>;
+};
+
+export const MANUAL_ORDER_RULES = {
+  defaultShippingZone: "domestic" as const,
+  ewayBillAutoThreshold: 50000
 };
 
 const baseVisibleFields = [
@@ -177,7 +180,6 @@ export const providerCapabilities: Record<ManualOrderProvider, ProviderCapabilit
 const defaultAddress = (): ManualOrderAddress => ({
   contact_name: "",
   phone: "",
-  alternate_phone: "",
   email: "",
   gstin: "",
   address_line_1: "",
@@ -224,7 +226,6 @@ export const createDefaultManualOrder = (): ManualOrderDraft => ({
   }],
   total_weight: 0.5,
   payment_mode: "PREPAID",
-  shipping_charges: 0,
   invoice_number: "",
   invoice_amount: 0,
   invoice_document: null,
@@ -298,6 +299,10 @@ export const validateManualOrderForProvider = (manualOrder: ManualOrderDraft): R
 
   return errors;
 };
+
+export const shouldShowEwayBillField = (manualOrder: Pick<ManualOrderDraft, "invoice_amount">, visibleFields: string[]): boolean => (
+  manualOrder.invoice_amount > MANUAL_ORDER_RULES.ewayBillAutoThreshold || visibleFields.includes("eway_bill_number")
+);
 
 export const mapManualOrderToProviderPayload = (manualOrder: ManualOrderDraft): Record<string, unknown> => ({
   provider: manualOrder.provider_target,

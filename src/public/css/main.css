@@ -473,11 +473,12 @@ input:focus, select:focus {
   background: #fff;
   color: #0f172a;
   border-radius: 8px;
-  min-width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   display: inline-grid;
   place-items: center;
   cursor: pointer;
+  font-size: 0.95rem;
 }
 
 .icon-btn:hover { background: #f1f5f9; }
@@ -875,22 +876,31 @@ input:focus, select:focus {
 .manual-order-top-grid {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .manual-grid-3,
 .manual-grid-4 {
   display: grid;
-  gap: 12px;
+  gap: 14px;
 }
 
 .manual-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .manual-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .manual-grid-span-2 { grid-column: span 2; }
+.manual-grid-span-3 { grid-column: span 3; }
+
+.buyer-grid {
+  align-items: start;
+}
+
+.order-meta-grid {
+  margin-bottom: 10px;
+}
 
 .line-items-head {
   margin-top: 14px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -899,18 +909,38 @@ input:focus, select:focus {
 .line-items-wrap,
 .package-rows-wrap {
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 
 .line-item-row,
 .package-row {
   border: 1px solid #e2e8f0;
   border-radius: 10px;
-  padding: 10px;
+  padding: 12px;
   display: grid;
-  gap: 8px;
+  gap: 10px;
   align-items: end;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: minmax(180px, 2fr) repeat(4, minmax(100px, 1fr)) 52px;
+  background: #fcfdff;
+}
+
+.row-action-wrap {
+  align-self: end;
+  justify-self: end;
+}
+
+.order-total-row {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.grand-total-field {
+  width: min(280px, 100%);
+}
+
+.metrics-grid {
+  align-items: stretch;
 }
 
 .pickup-cards {
@@ -949,6 +979,34 @@ input:focus, select:focus {
 }
 
 .package-metric p + p { margin-top: 4px; }
+
+
+.warehouse-page {
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.9fr);
+  align-items: start;
+}
+
+.warehouse-layout,
+.warehouse-form-card {
+  display: grid;
+  gap: 12px;
+}
+
+.warehouse-table-wrap table td {
+  vertical-align: top;
+}
+
+.warehouse-form-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.warehouse-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 
 .validation-card ul {
   margin: 10px 0 0;
@@ -1034,6 +1092,12 @@ input:focus, select:focus {
   .package-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .row-action-wrap {
+    justify-self: start;
+  }
+  .warehouse-page {
+    grid-template-columns: 1fr;
+  }
   .manual-sticky-footer {
     right: 12px;
     left: 12px;
@@ -1055,6 +1119,7 @@ input:focus, select:focus {
     grid-template-columns: 1fr;
   }
   .manual-grid-span-2 { grid-column: span 1; }
+  .manual-grid-span-3 { grid-column: span 1; }
 }
 
 @media (max-width: 760px) {
