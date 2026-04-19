@@ -35,6 +35,8 @@
                   <th>Phone</th>
                   <th>Address</th>
                   <th>Pincode</th>
+                  <th>City</th>
+                  <th>State</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -46,6 +48,8 @@
                     <td><%= warehouse.phone %></td>
                     <td><%= warehouse.address %></td>
                     <td><%= warehouse.pincode %></td>
+                    <td><%= warehouse.city %></td>
+                    <td><%= warehouse.state %></td>
                     <td>
                       <div class="warehouse-row-actions">
                         <a class="btn btn-sm btn-soft-link" href="/warehouse?edit=<%= warehouse.id %>">Edit</a>
@@ -65,13 +69,15 @@
           <div class="section-header">
             <h3><%= editWarehouse ? 'Edit warehouse' : 'Add warehouse' %></h3>
           </div>
-          <form method="post" action="/warehouse" class="warehouse-form-grid">
+          <form method="post" action="/warehouse" class="warehouse-form-grid" id="warehouseForm">
             <input type="hidden" name="id" value="<%= editWarehouse?.id ?? '' %>" />
             <label>Warehouse Name<input name="name" required value="<%= editWarehouse?.name ?? '' %>" /></label>
             <label>Contact Person Name<input name="contact_person_name" required value="<%= editWarehouse?.contact_person_name ?? '' %>" /></label>
             <label>Phone Number<input name="phone" required value="<%= editWarehouse?.phone ?? '' %>" /></label>
-            <label>Address<input name="address" required value="<%= editWarehouse?.address ?? '' %>" /></label>
-            <label>Pincode<input name="pincode" required value="<%= editWarehouse?.pincode ?? '' %>" /></label>
+            <label class="warehouse-form-address">Address<input name="address" required value="<%= editWarehouse?.address ?? '' %>" /></label>
+            <label>Pincode<input name="pincode" maxlength="6" inputmode="numeric" required value="<%= editWarehouse?.pincode ?? '' %>" /></label>
+            <label>City<input name="city" required value="<%= editWarehouse?.city ?? '' %>" /></label>
+            <label>State<input name="state" required value="<%= editWarehouse?.state ?? '' %>" /></label>
             <div class="warehouse-form-actions">
               <% if (editWarehouse) { %>
                 <a class="btn btn-soft-link" href="/warehouse">Cancel edit</a>
@@ -83,5 +89,44 @@
       </main>
     </div>
   </div>
+
+  <script>
+    (() => {
+      const pincodeDirectory = <%- JSON.stringify(pincodeDirectory) %>;
+      const form = document.getElementById('warehouseForm');
+      if (!form) return;
+
+      const pincodeInput = form.querySelector('input[name="pincode"]');
+      const cityInput = form.querySelector('input[name="city"]');
+      const stateInput = form.querySelector('input[name="state"]');
+
+      const lookupIndianPincode = async (pincode) => {
+        const normalized = String(pincode || '').trim();
+        if (!/^\d{6}$/.test(normalized)) {
+          return null;
+        }
+
+        return pincodeDirectory[normalized] || null;
+      };
+
+      const applyWarehousePincodeLookup = async () => {
+        const lookup = await lookupIndianPincode(pincodeInput.value);
+        if (!lookup) {
+          return;
+        }
+
+        cityInput.value = lookup.city;
+        stateInput.value = lookup.state;
+      };
+
+      pincodeInput.addEventListener('input', () => {
+        if (pincodeInput.value.trim().length === 6) {
+          applyWarehousePincodeLookup();
+        }
+      });
+
+      pincodeInput.addEventListener('blur', applyWarehousePincodeLookup);
+    })();
+  </script>
 </body>
 </html>

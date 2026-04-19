@@ -1029,6 +1029,13 @@ input:focus, select:focus {
 .warehouse-form-grid {
   display: grid;
   gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+}
+
+.warehouse-form-address,
+.warehouse-form-actions {
+  grid-column: 1 / -1;
 }
 
 .warehouse-form-actions {
@@ -1150,7 +1157,9 @@ input:focus, select:focus {
   }
   .manual-grid-span-2 { grid-column: span 1; }
   .manual-grid-span-3 { grid-column: span 1; }
+  .warehouse-form-grid { grid-template-columns: 1fr; }
 }
+
 
 @media (max-width: 760px) {
   .box-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
