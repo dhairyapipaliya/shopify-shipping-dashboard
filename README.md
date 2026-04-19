@@ -109,7 +109,7 @@ These currently log payload metadata and return `202 Accepted` for easy future e
 3. Click **Compare Cheapest Delhivery Option** for an order.
 4. Review cheapest recommendation and savings.
 5. Optionally override manually and click **Select & Book**.
-6. Open **Shipments** to view AWB, label download, and tracking links.
+6. Track AWB, label download, and tracking directly in the **Orders** workflow.
 
 ## 8) Production hardening checklist
 
