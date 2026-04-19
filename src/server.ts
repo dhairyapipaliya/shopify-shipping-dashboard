@@ -11,7 +11,6 @@ import { authRouter } from "./routes/auth.js";
 import { dashboardRouter } from "./routes/dashboard.js";
 import { dispatchRouter } from "./routes/dispatch.js";
 import { ordersRouter } from "./routes/orders.js";
-import { shipmentRouter } from "./routes/shipments.js";
 import { webhookRouter } from "./routes/webhooks.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -51,6 +50,5 @@ app.use(authRouter);
 app.use(dashboardRouter);
 app.use(ordersRouter);
 app.use(dispatchRouter);
-app.use(shipmentRouter);
 app.use(adminToolsRouter);
 app.use(webhookRouter);
