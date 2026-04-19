@@ -12,6 +12,7 @@ import { dashboardRouter } from "./routes/dashboard.js";
 import { dispatchRouter } from "./routes/dispatch.js";
 import { ordersRouter } from "./routes/orders.js";
 import { webhookRouter } from "./routes/webhooks.js";
+import { warehouseRouter } from "./routes/warehouse.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -50,5 +51,6 @@ app.use(authRouter);
 app.use(dashboardRouter);
 app.use(ordersRouter);
 app.use(dispatchRouter);
+app.use(warehouseRouter);
 app.use(adminToolsRouter);
 app.use(webhookRouter);
