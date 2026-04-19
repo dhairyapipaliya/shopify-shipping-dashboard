@@ -55,15 +55,7 @@
             </div>
           </div>
 
-          <div class="orders-content-shell <%= !orders.length ? 'is-empty' : '' %>">
-            <% if (!orders.length) { %>
-              <div class="empty-state orders-empty-state">
-                <div class="empty-state-content">
-                  <p><strong>No orders in this stage yet.</strong></p>
-                  <p class="muted small">Try choosing a different status filter, or sync fresh orders from Shopify.</p>
-                </div>
-              </div>
-            <% } else { %>
+          <div class="orders-content-shell">
             <div class="table-wrap">
               <table class="orders-operations-table">
               <thead>
@@ -81,6 +73,18 @@
                 </tr>
               </thead>
               <tbody>
+              <% if (!orders.length) { %>
+              <tr class="orders-empty-row">
+                <td colspan="10">
+                  <div class="empty-state orders-empty-state">
+                    <div class="empty-state-content">
+                      <p><strong>No orders in this stage yet.</strong></p>
+                      <p class="muted small">Try choosing a different status filter, or sync fresh orders from Shopify.</p>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <% } %>
               <% orders.forEach((order) => { %>
               <tr>
                 <td>
@@ -200,7 +204,6 @@
               </tbody>
               </table>
             </div>
-            <% } %>
           </div>
         </section>
       </main>
