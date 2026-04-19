@@ -17,9 +17,12 @@
           <p class="page-eyebrow">Management</p>
           <h1>Orders</h1>
         </div>
-        <form method="post" action="/orders/sync">
-          <button class="btn" type="submit">Sync Shopify Orders</button>
-        </form>
+        <div class="topbar-btn-row">
+          <form method="post" action="/orders/sync">
+            <button class="btn btn-soft" type="submit">Sync Shopify Orders</button>
+          </form>
+          <a class="btn" href="/orders/new">Add Order</a>
+        </div>
       </header>
 
       <main class="container">

@@ -16,6 +16,7 @@ import {
 import { PACKAGE_MODE, type PackageBox, type PackageMode } from "../utils/packageMode.js";
 import { matchesOrderStatusFilter, orderStatusFilters, orderStatusWorkflowGroups, parseOrderStatusFilter } from "../utils/orderStatuses.js";
 import { mapMockOrderToRow } from "../utils/orderViewModel.js";
+import { MANUAL_ORDER_PROVIDERS, createDefaultManualOrder, providerCapabilities } from "../utils/manualOrder.js";
 
 export const ordersRouter = Router();
 
@@ -56,6 +57,46 @@ ordersRouter.get("/orders", requireAuth, async (req, res) => {
     statusOptions: orderStatusFilters,
     statusGroups: orderStatusWorkflowGroups,
     statusCounts
+  });
+});
+
+ordersRouter.get("/orders/new", requireAuth, (req, res) => {
+  const manualOrderDraft = createDefaultManualOrder();
+  const providerOptions = Object.values(providerCapabilities).map((capability) => ({
+    value: capability.provider,
+    label: capability.label,
+    description: capability.description
+  }));
+  const pickupAddresses = [
+    {
+      id: "wh_blr_1",
+      name: "Bangalore Main Warehouse",
+      phone: "+91 90000 11111",
+      address: "No. 18, Electronic City Phase 1",
+      cityStatePincode: "Bengaluru, Karnataka · 560100"
+    },
+    {
+      id: "wh_del_2",
+      name: "Delhi NCR Hub",
+      phone: "+91 90000 22222",
+      address: "Plot 77, Okhla Industrial Estate Phase 2",
+      cityStatePincode: "New Delhi, Delhi · 110020"
+    },
+    {
+      id: "wh_mum_3",
+      name: "Mumbai Dispatch Center",
+      phone: "+91 90000 33333",
+      address: "Unit 5, Andheri Kurla Road",
+      cityStatePincode: "Mumbai, Maharashtra · 400059"
+    }
+  ];
+
+  res.render("manualOrder", {
+    manualOrderDraft,
+    providerOptions,
+    pickupAddresses,
+    providerCapabilities,
+    providerConstants: MANUAL_ORDER_PROVIDERS
   });
 });
 
