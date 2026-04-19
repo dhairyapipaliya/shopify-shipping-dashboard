@@ -310,6 +310,10 @@ export const validateManualOrderForProvider = (manualOrder: ManualOrderDraft): R
   return errors;
 };
 
+export const shouldShowEwayBillField = (manualOrder: Pick<ManualOrderDraft, "invoice_amount">, visibleFields: string[]): boolean => (
+  manualOrder.invoice_amount > MANUAL_ORDER_RULES.ewayBillAutoThreshold || visibleFields.includes("eway_bill_number")
+);
+
 export const mapManualOrderToProviderPayload = (manualOrder: ManualOrderDraft): Record<string, unknown> => ({
   provider: manualOrder.provider_target,
   shipmentType: manualOrder.shipment_type,
