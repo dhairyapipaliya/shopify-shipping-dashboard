@@ -1059,6 +1059,26 @@ input:focus, select:focus {
   flex-wrap: wrap;
 }
 
+
+.warehouse-field-hint {
+  min-height: 1.1rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.warehouse-field-hint.is-loading {
+  color: #475569;
+}
+
+.warehouse-field-hint.is-error {
+  color: #b91c1c;
+}
+
+.warehouse-field-hint.is-success {
+  color: #0f766e;
+}
+
+
 .validation-card ul {
   margin: 10px 0 0;
   padding-left: 18px;

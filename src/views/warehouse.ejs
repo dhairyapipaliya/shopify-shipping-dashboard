@@ -75,7 +75,7 @@
             <label>Contact Person Name<input name="contact_person_name" required value="<%= editWarehouse?.contact_person_name ?? '' %>" /></label>
             <label>Phone Number<input name="phone" required value="<%= editWarehouse?.phone ?? '' %>" /></label>
             <label class="warehouse-form-address">Address<input name="address" required value="<%= editWarehouse?.address ?? '' %>" /></label>
-            <label>Pincode<input name="pincode" maxlength="6" inputmode="numeric" required value="<%= editWarehouse?.pincode ?? '' %>" /></label>
+            <label>Pincode<input name="pincode" maxlength="6" inputmode="numeric" required value="<%= editWarehouse?.pincode ?? '' %>" /><small id="pincodeLookupMessage" class="warehouse-field-hint" aria-live="polite"></small></label>
             <label>City<input name="city" required value="<%= editWarehouse?.city ?? '' %>" /></label>
             <label>State<input name="state" required value="<%= editWarehouse?.state ?? '' %>" /></label>
             <div class="warehouse-form-actions">
@@ -102,30 +102,62 @@
       const pincodeInput = form.querySelector('input[name="pincode"]');
       const cityInput = form.querySelector('input[name="city"]');
       const stateInput = form.querySelector('input[name="state"]');
+      const messageEl = document.getElementById('pincodeLookupMessage');
 
-      if (!pincodeInput || !cityInput || !stateInput) return;
+      if (!pincodeInput || !cityInput || !stateInput || !messageEl) return;
 
       const { lookupIndianPincode, isValidIndianPincode } = window.WarehousePincodeLookup;
+      let debounceTimer;
+      let lookupRequestCounter = 0;
 
-      const applyWarehousePincodeLookup = () => {
-        if (!isValidIndianPincode(pincodeInput.value)) {
+      const setMessage = (text, type) => {
+        messageEl.textContent = text;
+        messageEl.classList.remove('is-error', 'is-loading', 'is-success');
+        if (type) {
+          messageEl.classList.add(type);
+        }
+      };
+
+      const applyWarehousePincodeLookup = async () => {
+        const pincode = pincodeInput.value;
+        if (!isValidIndianPincode(pincode)) {
+          setMessage('', '');
           return;
         }
 
-        const lookup = lookupIndianPincode(pincodeInput.value);
+        const requestId = ++lookupRequestCounter;
+        setMessage('Fetching city/state…', 'is-loading');
+
+        const lookup = await lookupIndianPincode(pincode);
+        if (requestId !== lookupRequestCounter) {
+          return;
+        }
+
         if (!lookup) {
+          setMessage('Could not auto-fetch city/state. Please enter manually.', 'is-error');
           return;
         }
 
         cityInput.value = lookup.city;
         stateInput.value = lookup.state;
+        setMessage('City and state auto-filled from pincode.', 'is-success');
       };
 
-      pincodeInput.addEventListener('input', applyWarehousePincodeLookup);
-      pincodeInput.addEventListener('blur', applyWarehousePincodeLookup);
+      const scheduleLookup = () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          void applyWarehousePincodeLookup();
+        }, 300);
+      };
+
+      pincodeInput.addEventListener('input', scheduleLookup);
+      pincodeInput.addEventListener('blur', () => {
+        clearTimeout(debounceTimer);
+        void applyWarehousePincodeLookup();
+      });
 
       if (isValidIndianPincode(pincodeInput.value)) {
-        applyWarehousePincodeLookup();
+        void applyWarehousePincodeLookup();
       }
     })();
   </script>

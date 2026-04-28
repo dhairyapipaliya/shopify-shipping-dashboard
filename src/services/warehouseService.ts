@@ -1,4 +1,4 @@
-import { lookupIndianPincode } from "../utils/pincodeLookup.js";
+import { lookupIndianPincode } from "./pincodeLookupService.js";
 import { normalizeWarehouseRecord, type WarehouseRecordInput } from "../data/warehouses.js";
 
 export const normalizeWarehouseInput = async (input: WarehouseRecordInput): Promise<WarehouseRecordInput> => {
