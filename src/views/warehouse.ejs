@@ -91,26 +91,28 @@
   </div>
 
   <script>
+    window.__INDIAN_PINCODE_DIRECTORY__ = <%- JSON.stringify(pincodeDirectory) %>;
+  </script>
+  <script src="/public/js/pincodeLookup.js"></script>
+  <script>
     (() => {
-      const pincodeDirectory = <%- JSON.stringify(pincodeDirectory) %>;
       const form = document.getElementById('warehouseForm');
-      if (!form) return;
+      if (!form || !window.WarehousePincodeLookup) return;
 
       const pincodeInput = form.querySelector('input[name="pincode"]');
       const cityInput = form.querySelector('input[name="city"]');
       const stateInput = form.querySelector('input[name="state"]');
 
-      const lookupIndianPincode = async (pincode) => {
-        const normalized = String(pincode || '').trim();
-        if (!/^\d{6}$/.test(normalized)) {
-          return null;
+      if (!pincodeInput || !cityInput || !stateInput) return;
+
+      const { lookupIndianPincode, isValidIndianPincode } = window.WarehousePincodeLookup;
+
+      const applyWarehousePincodeLookup = () => {
+        if (!isValidIndianPincode(pincodeInput.value)) {
+          return;
         }
 
-        return pincodeDirectory[normalized] || null;
-      };
-
-      const applyWarehousePincodeLookup = async () => {
-        const lookup = await lookupIndianPincode(pincodeInput.value);
+        const lookup = lookupIndianPincode(pincodeInput.value);
         if (!lookup) {
           return;
         }
@@ -119,13 +121,12 @@
         stateInput.value = lookup.state;
       };
 
-      pincodeInput.addEventListener('input', () => {
-        if (pincodeInput.value.trim().length === 6) {
-          applyWarehousePincodeLookup();
-        }
-      });
-
+      pincodeInput.addEventListener('input', applyWarehousePincodeLookup);
       pincodeInput.addEventListener('blur', applyWarehousePincodeLookup);
+
+      if (isValidIndianPincode(pincodeInput.value)) {
+        applyWarehousePincodeLookup();
+      }
     })();
   </script>
 </body>
