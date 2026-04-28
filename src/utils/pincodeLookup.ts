@@ -5,12 +5,15 @@ export type PincodeLookupResult = {
 
 const mockIndianPincodeDirectory: Record<string, PincodeLookupResult> = {
   "110020": { city: "New Delhi", state: "Delhi" },
-  "122001": { city: "Gurugram", state: "Haryana" },
+  "201309": { city: "Noida", state: "Uttar Pradesh" },
+  "360022": { city: "Rajkot", state: "Gujarat" },
   "400059": { city: "Mumbai", state: "Maharashtra" },
-  "500081": { city: "Hyderabad", state: "Telangana" },
+  "401107": { city: "Mumbai", state: "Maharashtra" },
+  "411005": { city: "Pune", state: "Maharashtra" },
+  "500034": { city: "Hyderabad", state: "Telangana" },
   "560100": { city: "Bengaluru", state: "Karnataka" },
-  "600096": { city: "Chennai", state: "Tamil Nadu" },
-  "700091": { city: "Kolkata", state: "West Bengal" }
+  "600032": { city: "Chennai", state: "Tamil Nadu" },
+  "700001": { city: "Kolkata", state: "West Bengal" }
 };
 
 export const listMockPincodeDirectory = (): Record<string, PincodeLookupResult> => ({ ...mockIndianPincodeDirectory });

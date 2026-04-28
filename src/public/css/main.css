@@ -1026,6 +1026,20 @@ input:focus, select:focus {
   vertical-align: top;
 }
 
+.warehouse-table-wrap table th:nth-child(4),
+.warehouse-table-wrap table td:nth-child(4) {
+  min-width: 220px;
+}
+
+.warehouse-table-wrap table th:nth-child(6),
+.warehouse-table-wrap table td:nth-child(6),
+.warehouse-table-wrap table th:nth-child(7),
+.warehouse-table-wrap table td:nth-child(7) {
+  min-width: 120px;
+  white-space: nowrap;
+}
+
+
 .warehouse-form-grid {
   display: grid;
   gap: 12px;
