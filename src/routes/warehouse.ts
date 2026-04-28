@@ -1,8 +1,9 @@
 import { Router } from "express";
 import { requireAuth } from "../middleware/auth.js";
 import { createWarehouse, deleteWarehouse, getWarehouseById, listWarehouses, updateWarehouse } from "../data/warehouses.js";
-import { listMockPincodeDirectory } from "../utils/pincodeLookup.js";
+import { isValidIndianPincode, listMockPincodeDirectory } from "../utils/pincodeLookup.js";
 import { normalizeWarehouseInput } from "../services/warehouseService.js";
+import { lookupIndianPincode } from "../services/pincodeLookupService.js";
 
 export const warehouseRouter = Router();
 
@@ -15,6 +16,22 @@ warehouseRouter.get("/warehouse", requireAuth, (req, res) => {
     editWarehouse,
     pincodeDirectory: listMockPincodeDirectory()
   });
+});
+
+warehouseRouter.get("/api/pincode/:pincode", requireAuth, async (req, res) => {
+  const pincode = typeof req.params.pincode === "string" ? req.params.pincode.trim() : "";
+  if (!isValidIndianPincode(pincode)) {
+    res.status(400).json({ error: "Invalid pincode" });
+    return;
+  }
+
+  const lookup = await lookupIndianPincode(pincode);
+  if (!lookup) {
+    res.status(404).json({ error: "Pincode not found" });
+    return;
+  }
+
+  res.json(lookup);
 });
 
 warehouseRouter.post("/warehouse", requireAuth, async (req, res) => {
