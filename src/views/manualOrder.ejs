@@ -59,9 +59,8 @@
             <label>Phone<input data-field="buyer_details.phone" /></label>
             <label>Email<input data-field="buyer_details.email" /></label>
             <label>GSTIN<input data-field="buyer_details.gstin" /></label>
-            <label>Pincode<input data-field="buyer_details.pincode" maxlength="6" /></label>
+            <label>Pincode<input data-field="buyer_details.pincode" maxlength="6" inputmode="numeric" /><small id="buyerPincodeHint" class="warehouse-field-hint" aria-live="polite"></small></label>
             <label>City<input data-field="buyer_details.city" /></label>
-            <label class="manual-grid-span-2">Address Line 1<input data-field="buyer_details.address_line_1" /></label>
             <label>State<input data-field="buyer_details.state" /></label>
             <label class="manual-grid-span-2">Address Line 1<input data-field="buyer_details.address_line_1" /></label>
             <label class="manual-grid-span-3">Address Line 2<input data-field="buyer_details.address_line_2" /></label>
@@ -149,6 +148,8 @@
     </div>
   </div>
 
+  <script>window.__INDIAN_PINCODE_DIRECTORY__ = <%- JSON.stringify(pincodeDirectory) %>;</script>
+  <script src="/public/js/pincodeLookup.js"></script>
   <script>
     (() => {
       const initialDraft = <%- JSON.stringify(manualOrderDraft) %>;
@@ -156,7 +157,6 @@
       const pickupAddresses = <%- JSON.stringify(pickupAddresses) %>;
       const providerCapabilities = <%- JSON.stringify(providerCapabilities) %>;
       const manualOrderRules = <%- JSON.stringify(manualOrderRules) %>;
-      const pincodeDirectory = <%- JSON.stringify(pincodeDirectory) %>;
       const PACKAGE_MODE = {
         SINGLE: 'SINGLE_PACKAGE_B2C',
         MULTI: 'MULTI_PACKAGE_B2B'
@@ -216,22 +216,40 @@
         return grandTotalAmount > manualOrderRules.ewayBillAutoThreshold || visibleFields.includes('eway_bill_number');
       };
 
-      const lookupIndianPincode = async (pincode) => {
-        const normalized = String(pincode || '').trim();
-        if (!/^\d{6}$/.test(normalized)) {
-          return null;
-        }
-        return pincodeDirectory[normalized] || null;
+      const buyerPincodeHint = document.getElementById('buyerPincodeHint');
+      let pincodeLookupTimer;
+      let pincodeLookupCounter = 0;
+
+      const setPincodeHint = (text, type) => {
+        if (!buyerPincodeHint) return;
+        buyerPincodeHint.textContent = text;
+        buyerPincodeHint.className = 'warehouse-field-hint' + (type ? ` ${type}` : '');
       };
 
-      const applyPincodeLookup = async (pincode) => {
-        const lookup = await lookupIndianPincode(pincode);
-        if (!lookup) {
+      const applyPincodeLookup = async (section, pincode) => {
+        const lookup = window.WarehousePincodeLookup;
+        if (!lookup) return;
+        if (!lookup.isValidIndianPincode(pincode)) {
+          setPincodeHint('', '');
           return;
         }
 
-        state.draft.buyer_details.city = lookup.city;
-        state.draft.buyer_details.state = lookup.state;
+        const requestId = ++pincodeLookupCounter;
+        setPincodeHint('Fetching city/state…', 'is-loading');
+
+        const result = await lookup.lookupIndianPincode(pincode);
+        if (requestId !== pincodeLookupCounter) return;
+
+        if (!result) {
+          setPincodeHint('Could not auto-fetch city/state. Please enter manually.', 'is-error');
+          return;
+        }
+
+        setByPath(state.draft, `${section}.city`, result.city);
+        setByPath(state.draft, `${section}.state`, result.state);
+        setPincodeHint('City and state auto-filled from pincode.', 'is-success');
+        persistDraft();
+        syncPrimitiveFields();
       };
 
       const getRules = () => {
@@ -496,7 +514,10 @@
           }
 
           if (path === 'buyer_details.pincode') {
-            await applyPincodeLookup(value);
+            clearTimeout(pincodeLookupTimer);
+            pincodeLookupTimer = setTimeout(() => {
+              void applyPincodeLookup('buyer_details', value);
+            }, 300);
           }
 
           validateDraft();
